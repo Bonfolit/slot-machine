@@ -14,6 +14,7 @@ namespace BonLib.Managers
         public virtual void SubscribeToEvents() {}
         public virtual void Initialize() {}
         public virtual void LateInitialize() {}
+        public virtual void Dispose() {}
     }
 
     public class Manager<T> : ManagerBase where T : Manager<T>

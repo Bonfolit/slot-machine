@@ -8,6 +8,7 @@
         void SubscribeToEvents();
         void Initialize();
         void LateInitialize();
+        void Dispose();
     }
 
 }
