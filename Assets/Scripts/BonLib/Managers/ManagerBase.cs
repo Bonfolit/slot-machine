@@ -12,6 +12,7 @@ namespace BonLib.Managers
         public virtual void BindDependencies() {}
         public virtual void ResolveDependencies() {}
         public virtual void SubscribeToEvents() {}
+        public virtual void PreInitialize() {}
         public virtual void Initialize() {}
         public virtual void LateInitialize() {}
         public virtual void Dispose() {}

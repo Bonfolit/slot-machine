@@ -7,9 +7,11 @@ using UnityEngine.SceneManagement;
 namespace Core.Runtime.Managers
 {
     public class SceneLoader : MonoBehaviour, 
-        IEventHandler<LoadSceneEvent>
+        IEventHandler<LoadSceneEvent>,
+        IEventHandler<ManagersInitializedEvent>
     {
         private EventManager m_eventManager;
+        private GameManager m_gameManager;
         
         private void Awake()
         {
@@ -19,6 +21,9 @@ namespace Core.Runtime.Managers
         private void OnEnable()
         {
             m_eventManager.AddListener<LoadSceneEvent>(this, Priority.Critical);
+            m_eventManager.AddListener<ManagersInitializedEvent>(this, Priority.Critical);
+
+            m_gameManager ??= DI.Resolve<GameManager>();
 
             var evt = new SceneLoaderReadyEvent();
             m_eventManager.SendEvent(ref evt);
@@ -36,18 +41,23 @@ namespace Core.Runtime.Managers
 
         private void LoadScene(int index)
         {
-            AsyncOperation operation = SceneManager.LoadSceneAsync(index);
+            AsyncOperation operation = SceneManager.LoadSceneAsync(index, LoadSceneMode.Additive);
             
             operation.completed += (obj) =>
             {
-                OnSceneLoaded(index);
+                OnSceneLoaded();
             };
         }
 
-        private void OnSceneLoaded(int sceneIndex)
+        private void OnSceneLoaded()
         {
-            var evt = new SceneLoadedEvent(sceneIndex);
+            var evt = new MainSceneLoadedEvent();
             m_eventManager.SendEvent(ref evt);
+        }
+
+        public void OnEventReceived(ref ManagersInitializedEvent evt)
+        {
+            SceneManager.UnloadSceneAsync(m_gameManager.Config.LoadingScene);
         }
     }
 

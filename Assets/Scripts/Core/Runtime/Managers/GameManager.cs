@@ -11,7 +11,7 @@ namespace Core.Runtime.Managers
 {
     public class GameManager : MonoBehaviour,
         IEventHandler<SceneLoaderReadyEvent>,
-        IEventHandler<SceneLoadedEvent>
+        IEventHandler<MainSceneLoadedEvent>
     {
         private GameConfig m_config;
         public GameConfig Config => m_config ??= Resources.Load<GameConfig>("Config/GameConfig");
@@ -29,7 +29,7 @@ namespace Core.Runtime.Managers
             DI.Bind<EventManager>(m_eventManager);
 
             m_eventManager.AddListener<SceneLoaderReadyEvent>(this, Priority.Critical);
-            m_eventManager.AddListener<SceneLoadedEvent>(this, Priority.Critical);
+            m_eventManager.AddListener<MainSceneLoadedEvent>(this, Priority.Critical);
         }
 
         private void Start()
@@ -43,14 +43,10 @@ namespace Core.Runtime.Managers
             m_eventManager.SendEvent(ref loadSceneEvent);
         }
 
-        public void OnEventReceived(ref SceneLoadedEvent evt)
+        public void OnEventReceived(ref MainSceneLoadedEvent evt)
         {
-            if (evt.Scene == Config.MainScene)
-            {
-                LoadMainSceneObjects();
-                
-                InitializeManagers();
-            }
+            LoadMainSceneObjects();
+            InitializeManagers();
         }
 
         private void LoadMainSceneObjects()
@@ -76,12 +72,19 @@ namespace Core.Runtime.Managers
             }
             foreach (var manager in m_managers)
             {
+                manager.PreInitialize();
+            }
+            foreach (var manager in m_managers)
+            {
                 manager.Initialize();
             }
             foreach (var manager in m_managers)
             {
                 manager.LateInitialize();
             }
+
+            var evt = new ManagersInitializedEvent();
+            m_eventManager.SendEvent(ref evt);
         }
 
         private void DisposeManagers()

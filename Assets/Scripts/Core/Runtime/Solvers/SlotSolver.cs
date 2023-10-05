@@ -146,11 +146,6 @@ namespace Core.Runtime.Solvers
 
             var lossRatio = (float)loss / (float)totalBlockCount;
 
-            if (lossRatio <= .05f)
-            {
-                Debug.LogWarning("Loss threshold Satisfied");
-            }
-
             return (float)loss / (float)totalBlockCount;
         }
     }
