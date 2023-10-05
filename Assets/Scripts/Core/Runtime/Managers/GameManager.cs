@@ -45,7 +45,7 @@ namespace Core.Runtime.Managers
 
         public void OnEventReceived(ref SceneLoadedEvent evt)
         {
-            if (evt.SceneIndex == Config.MainScene)
+            if (evt.Scene == Config.MainScene)
             {
                 LoadMainSceneObjects();
                 

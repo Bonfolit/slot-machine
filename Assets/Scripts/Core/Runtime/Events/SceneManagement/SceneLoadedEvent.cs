@@ -7,11 +7,11 @@ namespace Core.Runtime.Events.SceneManagement
     {
         public bool IsConsumed { get; set; }
 
-        public int SceneIndex;
+        public int Scene;
 
-        public SceneLoadedEvent(int sceneIndex) : this()
+        public SceneLoadedEvent(int scene) : this()
         {
-            SceneIndex = sceneIndex;
+            Scene = scene;
         }
     }
 
