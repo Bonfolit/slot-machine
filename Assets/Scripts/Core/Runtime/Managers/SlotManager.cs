@@ -31,7 +31,6 @@ namespace Core.Runtime.Managers
         public override void PreInitialize()
         {
             base.PreInitialize();
-            
             m_table = Resources.Load<SlotCombinationTable>("Data/SlotCombinationTable");
         }
 
