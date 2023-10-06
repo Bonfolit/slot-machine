@@ -8,8 +8,9 @@ namespace Core.Runtime.Solvers
 {
     public static class SlotSolver
     {
-        // A genetic-inspired knapsack solver for slot combination sequencing
-
+        /// <summary>
+        /// A genetic-inspired knapsack solver for slot combination sequencing
+        /// </summary>
         public static SlotCombination[] Solve(SlotCombinationTable table, int count, 
             int iterationLimit = 1000, float lossThreshold = .05f)
         {
@@ -161,7 +162,7 @@ namespace Core.Runtime.Solvers
         {
             if (BlockCounters[blockIndex] == 0 && amount < 0)
             {
-                Debug.LogWarning("This should never happen");
+                Debug.LogError("This should never happen");
             }
             BlockCounters[blockIndex] += amount;
         }

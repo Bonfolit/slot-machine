@@ -1,28 +1,31 @@
 ﻿using System;
 using System.Collections;
+using BonLib.DependencyInjection;
 using BonLib.Events;
 using BonLib.Managers;
+using BonLib.Pooling;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
 using Core.Runtime.Solvers;
+using NaughtyAttributes;
 using UnityEngine;
 
 namespace Core.Runtime.Managers
 {
 
-    public class SlotManager : Manager<SlotManager>,
-        IEventHandler<RequestPlayerDataEvent>
+    public class SlotManager : Manager<SlotManager>
     {
+        private SaveManager m_saveManager;
         private SlotCombinationTable m_table;
 
         [SerializeField]
         private SlotCombination[] m_nextCombinations;
 
-        public override void SubscribeToEvents()
+        public override void ResolveDependencies()
         {
-            base.SubscribeToEvents();
-            
-            EventManager.AddListener<RequestPlayerDataEvent>(this, Priority.Low);
+            base.ResolveDependencies();
+
+            m_saveManager = DI.Resolve<SaveManager>();
         }
 
         public override void PreInitialize()
@@ -35,16 +38,15 @@ namespace Core.Runtime.Managers
         public override void Initialize()
         {
             base.Initialize();
-
-            var evt = new RequestPlayerDataEvent();
-            EventManager.SendEvent(ref evt);
+            
+            SetSlotCombinations();
         }
 
-        public void OnEventReceived(ref RequestPlayerDataEvent evt)
+        private void SetSlotCombinations()
         {
-            if (evt.Data.NextCombinations != null)
+            if (m_saveManager.Data.NextCombinations != null)
             {
-                m_nextCombinations = evt.Data.NextCombinations;
+                m_nextCombinations = m_saveManager.Data.NextCombinations;
             }
             else
             {
