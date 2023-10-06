@@ -1,5 +1,6 @@
 ﻿using BonLib.Managers;
 using BonLib.Pooling;
+using Core.Config;
 using Core.Runtime.Data;
 using Core.Runtime.Gameplay.Slot;
 using UnityEngine;

@@ -17,7 +17,7 @@ namespace Core.Runtime.Managers
         
         [SerializeField]
         private PlayerData m_data;
-        public PlayerData Data => m_data;
+        public PlayerData Data => m_data ??= ScriptableObject.CreateInstance<PlayerData>();
 
         public override void SubscribeToEvents()
         {
@@ -38,13 +38,11 @@ namespace Core.Runtime.Managers
         
         private void LoadUserData()
         {
-            m_data = ScriptableObject.CreateInstance<PlayerData>();
-
             if (File.Exists(m_dataFilePath))
             {
                 string json = File.ReadAllText(m_dataFilePath);
 
-                JsonUtility.FromJsonOverwrite(json, m_data);
+                JsonUtility.FromJsonOverwrite(json, Data);
             }
             else
             {
@@ -55,7 +53,7 @@ namespace Core.Runtime.Managers
         
         private void SaveUserData()
         {
-            string json = JsonUtility.ToJson(m_data);
+            string json = JsonUtility.ToJson(Data);
 
             File.WriteAllText(m_dataFilePath, json);
         }

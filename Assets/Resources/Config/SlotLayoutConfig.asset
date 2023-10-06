@@ -12,5 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 779ea4d7d607457f96d3e1b77123656a, type: 3}
   m_Name: SlotLayoutConfig
   m_EditorClassIdentifier: 
+  ColumnSize: 5
   SlotDimensions: {x: 0.8, y: 0.8}
   VerticalOffset: 2
+  MarkerIndex: 3
+  ModHeight: 0
