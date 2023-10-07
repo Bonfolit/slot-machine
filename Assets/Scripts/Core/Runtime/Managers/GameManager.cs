@@ -45,8 +45,11 @@ namespace Core.Runtime.Managers
 
         public void OnEventReceived(ref MainSceneLoadedEvent evt)
         {
-            LoadMainSceneObjects();
-            InitializeManagers();
+            if (evt.SceneIndex == Config.MainScene)
+            {
+                LoadMainSceneObjects();
+                InitializeManagers();
+            }
         }
 
         private void LoadMainSceneObjects()

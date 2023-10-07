@@ -48,7 +48,7 @@ namespace Core.Runtime.Managers
             }
             else
             {
-                m_data.LastCombination = new SlotCombination(SlotType.A, SlotType.Bonus, SlotType.Jackpot);
+                Data.LastCombination = new SlotCombination(SlotType.A, SlotType.Bonus, SlotType.Jackpot);
                 SaveUserData();
             }
         }

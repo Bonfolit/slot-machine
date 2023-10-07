@@ -13,12 +13,18 @@ namespace Core.Runtime.Gameplay.Slot
 {
     public class SlotColumn : MonoBehaviour
     {
+        [SerializeField]
         private float m_slideAmount;
+        public float SlideAmount => m_slideAmount;
+
+        private float m_columnTotalHeight;
 
         [SerializeField]
         private Slot[] m_slots;
-        public void Initialize(SlotSpriteContainer container, SlotConfig config, PoolObject spriteRendererPoolObject)
+        public void Initialize(SlotSpriteContainer container, SlotConfig config, PoolObject spriteRendererPoolObject, float columnTotalHeight)
         {
+            m_columnTotalHeight = columnTotalHeight;
+            
             m_slots = new Slot[config.ColumnSize];
 
             for (int i = 0; i < config.ColumnSize; i++)
@@ -30,7 +36,7 @@ namespace Core.Runtime.Gameplay.Slot
 
         public void SetSlide(float slideAmount)
         {
-            m_slideAmount = slideAmount;
+            m_slideAmount = slideAmount % m_columnTotalHeight;
 
             for (var i = 0; i < m_slots.Length; i++)
             {

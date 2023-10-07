@@ -45,13 +45,15 @@ namespace Core.Runtime.Managers
             
             operation.completed += (obj) =>
             {
-                OnSceneLoaded();
+                OnSceneLoaded(index);
             };
         }
 
-        private void OnSceneLoaded()
+        private void OnSceneLoaded(int sceneIndex)
         {
-            var evt = new MainSceneLoadedEvent();
+            SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(sceneIndex));
+            
+            var evt = new MainSceneLoadedEvent(sceneIndex);
             m_eventManager.SendEvent(ref evt);
         }
 

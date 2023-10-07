@@ -1,18 +1,22 @@
 ﻿using System;
 using BonLib.DependencyInjection;
+using BonLib.Events;
 using BonLib.Managers;
 using BonLib.Pooling;
 using Core.Config;
 using Core.Runtime.Data;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
+using DG.Tweening;
+using DG.Tweening.Core;
 using NaughtyAttributes;
 using UnityEngine;
 
 namespace Core.Runtime.Managers
 {
 
-    public class SlotMachine : Manager<SlotMachine>
+    public class SlotMachine : Manager<SlotMachine>,
+        IEventHandler<SpinButtonPressedEvent>
     {
         private SaveManager m_saveManager;
         
@@ -37,27 +41,54 @@ namespace Core.Runtime.Managers
             m_saveManager = DI.Resolve<SaveManager>();
         }
 
+        public override void SubscribeToEvents()
+        {
+            base.SubscribeToEvents();
+            
+            EventManager.AddListener<SpinButtonPressedEvent>(this);
+        }
+
         public override void LateInitialize()
         {
             base.LateInitialize();
             
             for (var i = 0; i < m_slotColumns.Length; i++)
             {
-                m_slotColumns[i].Initialize(SlotSpriteContainer, Config, m_spriteRendererPoolObject);
+                m_slotColumns[i].Initialize(SlotSpriteContainer, Config, m_spriteRendererPoolObject, Config.ColumnTotalHeight);
             }
             
-            SetCombination(m_saveManager.Data.LastCombination);
+            SetCombination(m_saveManager.Data.LastCombination, true);
         }
 
-        private void SetCombination(SlotCombination combination)
+        private void SetCombination(SlotCombination combination, bool instant = false)
         {
             for (var i = 0; i < m_slotColumns.Length; i++)
             {
+                var column = m_slotColumns[i];
+                
                 var slot = combination.SlotTypes[i];
                 var slideCount = (Config.MarkerIndex - (int)slot) % Config.ColumnSize;
                 var slideAmount = Config.VerticalOffset * slideCount;
 
-                m_slotColumns[i].SetSlide(slideAmount);
+                if (instant)
+                {
+                    m_slotColumns[i].SetSlide(slideAmount);
+                    continue;
+                }
+                
+
+                DOSetter<float> slideSetter = (val) =>
+                {
+                    column.SetSlide(val); 
+                    
+                };
+
+                var tweenHandle = 
+                    DOTween.To(() => (column.SlideAmount), 
+                        slideSetter, 
+                        slideAmount + Config.ColumnTotalHeight * 10f, 
+                        1f);
+
             }
         }
 
@@ -76,6 +107,11 @@ namespace Core.Runtime.Managers
 
             var updateEvent = new SlotCombinationsUpdatedEvent(remainingCombinations);
             EventManager.SendEvent(ref updateEvent);
+        }
+
+        public void OnEventReceived(ref SpinButtonPressedEvent evt)
+        {
+            Spin();
         }
     }
 
