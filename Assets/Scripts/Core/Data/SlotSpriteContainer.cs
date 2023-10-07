@@ -2,7 +2,7 @@
 using Core.Runtime.Gameplay.Slot;
 using UnityEngine;
 
-namespace Core.Runtime.Data
+namespace Core.Data
 {
 
     [CreateAssetMenu(fileName = "SlotSpriteContainer", menuName = "Data/Slot Sprite Container", order = 0)]

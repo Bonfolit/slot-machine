@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Core.Runtime.Gameplay;
 using Core.Runtime.Gameplay.Slot;
-using Core.Runtime.Solvers;
+using Core.Solvers;
 using NUnit.Framework;
 using UnityEngine;
 using Debug = UnityEngine.Debug;

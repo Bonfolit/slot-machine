@@ -4,10 +4,9 @@ using BonLib.Events;
 using BonLib.Managers;
 using BonLib.Pooling;
 using Core.Config;
-using Core.Runtime.Data;
+using Core.Data;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
-using Core.Runtime.Solvers;
 using DG.Tweening;
 using DG.Tweening.Core;
 using NaughtyAttributes;
@@ -72,13 +71,44 @@ namespace Core.Runtime.Managers
 
         private void SetCombination(SlotCombination combination, bool instant = false)
         {
+            var firstTwoSlotsEqual = combination.SlotTypes[0].Equals(combination.SlotTypes[1]);
+            var isMatch = true;
+            var slotType = combination.SlotTypes[0];
+            for (int i = 1; i < combination.SlotTypes.Length; i++)
+            {
+                if (!combination.SlotTypes[i].Equals(slotType))
+                {
+                    isMatch = false;
+                    break;
+                }
+            }
+            
+
             for (var i = 0; i < m_slotColumns.Length; i++)
             {
                 var column = m_slotColumns[i];
+
+                var animationType = SlotAnimationType.Quick;
+
+                if (i == m_slotColumns.Length - 1 && firstTwoSlotsEqual)
+                {
+                    if (isMatch)
+                    {
+                        animationType = SlotAnimationType.Slow;
+                    }
+                    else
+                    {
+                        animationType = SlotAnimationType.Normal;
+                    }
+                }
+
+                var animationData = Config.Animation.GetAnimationData(animationType);
                 
                 var slot = combination.SlotTypes[i];
                 var slideCount = (Config.MarkerIndex - (int)slot) % Config.ColumnSize;
                 var slideAmount = Config.VerticalOffset * slideCount;
+
+                var spinCount = m_random.Next(animationData.LoopSpinRange.x, animationData.LoopSpinRange.y);
 
                 if (instant)
                 {
@@ -90,17 +120,48 @@ namespace Core.Runtime.Managers
                 DOSetter<float> slideSetter = (val) =>
                 {
                     column.SetSlide(val); 
-                    
                 };
 
-                var spinCount = m_random.Next(Config.SpinRange.x, Config.SpinRange.y);
+                var offset = (float)i * Config.Animation.StopOffsetPerColumn;
 
-                var tweenHandle = 
+                var sequence = DOTween.Sequence();
+                
+                sequence.Append(
                     DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        slideAmount + Config.ColumnTotalHeight * spinCount, 
-                        1f);
+                        column.SlideAmount + Config.ColumnTotalHeight * animationData.InitialSlideCount, 
+                        animationData.InitialDuration)
+                        .SetEase(animationData.InitialEase));
+                
+                sequence.Append(
+                    DOTween.To(() => (column.SlideAmount), 
+                            slideSetter, 
+                            column.SlideAmount + Config.ColumnTotalHeight * spinCount, 
+                            animationData.LoopDuration + offset)
+                        .SetEase(animationData.LoopEase));
+                // sequence.Append(
+                //     DOTween.To(() => (column.SlideAmount), 
+                //         slideSetter, 
+                //         column.SlideAmount + Config.ColumnTotalHeight, 
+                //         animationData.LoopDuration)
+                //         .SetEase(animationData.LoopEase)
+                //         .SetLoops(spinCount));
 
+                sequence.Append(
+                    DOTween.To(() => (column.SlideAmount), 
+                        slideSetter, 
+                        slideAmount + Config.ColumnTotalHeight * animationData.StopSlideCount, 
+                        animationData.StopDuration)
+                        .SetEase(animationData.StopEase));
+
+                var aniCurve = new AnimationCurve();
+                
+                sequence.Append(
+                    DOTween.To(() => (column.SlideAmount), 
+                            slideSetter, 
+                            column.SlideAmount + Config.ColumnTotalHeight * animationData.InitialSlideCount, 
+                            animationData.InitialDuration)
+                        .SetEase(aniCurve));
             }
         }
 

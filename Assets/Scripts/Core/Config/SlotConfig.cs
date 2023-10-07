@@ -16,6 +16,8 @@ namespace Core.Config
         [MinMaxSlider(2f, 20f)]
         public Vector2Int SpinRange;
 
+        public SlotAnimationConfig Animation;
+
         public float ColumnTotalHeight => (float)ColumnSize * VerticalOffset;
     }
 

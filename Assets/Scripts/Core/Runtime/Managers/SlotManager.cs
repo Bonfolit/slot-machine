@@ -7,7 +7,7 @@ using BonLib.Pooling;
 using Core.Config;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
-using Core.Runtime.Solvers;
+using Core.Solvers;
 using NaughtyAttributes;
 using UnityEngine;
 

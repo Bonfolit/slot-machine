@@ -5,7 +5,7 @@ using Core.Runtime.Gameplay.Slot;
 using UnityEngine;
 using Random = System.Random;
 
-namespace Core.Runtime.Solvers
+namespace Core.Solvers
 {
     public static class SlotSolver
     {

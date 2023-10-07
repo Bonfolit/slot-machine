@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using BonLib.Events;
 using BonLib.Managers;
-using Core.Runtime.Data;
+using Core.Data;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
 using UnityEngine;
