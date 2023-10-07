@@ -7,10 +7,12 @@ using Core.Config;
 using Core.Runtime.Data;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
+using Core.Runtime.Solvers;
 using DG.Tweening;
 using DG.Tweening.Core;
 using NaughtyAttributes;
 using UnityEngine;
+using Random = System.Random;
 
 namespace Core.Runtime.Managers
 {
@@ -18,6 +20,7 @@ namespace Core.Runtime.Managers
     public class SlotMachine : Manager<SlotMachine>,
         IEventHandler<SpinButtonPressedEvent>
     {
+        private Random m_random;
         private SaveManager m_saveManager;
         
         private SlotSpriteContainer m_slotSpriteContainer;
@@ -46,6 +49,13 @@ namespace Core.Runtime.Managers
             base.SubscribeToEvents();
             
             EventManager.AddListener<SpinButtonPressedEvent>(this);
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            m_random = new Random();
         }
 
         public override void LateInitialize()
@@ -83,10 +93,12 @@ namespace Core.Runtime.Managers
                     
                 };
 
+                var spinCount = m_random.Next(Config.SpinRange.x, Config.SpinRange.y);
+
                 var tweenHandle = 
                     DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        slideAmount + Config.ColumnTotalHeight * 10f, 
+                        slideAmount + Config.ColumnTotalHeight * spinCount, 
                         1f);
 
             }
@@ -99,14 +111,8 @@ namespace Core.Runtime.Managers
             
             SetCombination(nextCombination);
 
-            var remainingCombinations = new SlotCombination[Config.CombinationBufferAmount];
-            Array.Copy(m_saveManager.Data.NextCombinations, 1, remainingCombinations, 0, 99);
-            
-            var selectedEvent = new CombinationSelectedEvent(nextCombination);
-            EventManager.SendEvent(ref selectedEvent);
-
-            var updateEvent = new SlotCombinationsUpdatedEvent(remainingCombinations);
-            EventManager.SendEvent(ref updateEvent);
+            var spunEvt = new SlotMachineSpunEvent();
+            EventManager.SendEvent(ref spunEvt);
         }
 
         public void OnEventReceived(ref SpinButtonPressedEvent evt)

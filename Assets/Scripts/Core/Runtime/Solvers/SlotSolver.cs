@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Core.Runtime.Gameplay.Slot;
 using UnityEngine;
@@ -108,7 +109,7 @@ namespace Core.Runtime.Solvers
                 combinationCounters[prevCombination].AddCounter(prevBlock, -1);
                 combinationCounters[target.combinationIndex].AddCounter(target.blockIndex, 1);
                 
-                // TO-DO: Block ranges have a bug near their edges
+                // TO-DO: There is a bug that causes empty blocks to be overridden
             }
 
             for (var i = 0; i < count; i++)
@@ -132,6 +133,45 @@ namespace Core.Runtime.Solvers
             Debug.LogWarning($"Iteration reached: {iter}");
 
             return result;
+        }
+
+        public static void QueueNewCombination(SlotCombinationTable table, ref SlotCombination[] current)
+        {
+            for (int i = 1; i < current.Length; i++)
+            {
+                current[i - 1] = current[i];
+            }
+
+            current[^1] = default(SlotCombination);
+            
+            var random = new Random();
+
+            var totalCombinationCount = table.SlotCombinations.Count;
+
+            var lastBlockCounts = new float[totalCombinationCount];
+            var candidateCombinationIndices = new int[totalCombinationCount];
+            var blockWidths = new float[totalCombinationCount];
+
+            for (var i = 0; i < totalCombinationCount; i++)
+            {
+                var blockWidth = ((float)current.Length / 100f) / table.SlotCombinations[i].Probability;
+                blockWidths[i] = blockWidth;
+
+                var combinationCount = 0;
+                for (int j = current.Length - 2; j > current.Length - blockWidth - 2; j--)
+                {
+                    if (current[j].Equals(table.SlotCombinations[i].Combination))
+                    {
+                        combinationCount++;
+                    }
+                }
+
+                lastBlockCounts[i] = combinationCount;
+            }
+
+            var candidateCombinationIndex = Array.IndexOf(lastBlockCounts, lastBlockCounts.Min());
+
+            current[^1] = table.SlotCombinations[candidateCombinationIndex].Combination;
         }
         
         public static float CalculateLoss(in int totalBlockCount, in CombinationCounter[] combinationCounters)

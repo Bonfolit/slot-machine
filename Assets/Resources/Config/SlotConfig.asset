@@ -17,3 +17,4 @@ MonoBehaviour:
   VerticalOffset: 2
   MarkerIndex: 3
   CombinationBufferAmount: 100
+  SpinRange: {x: 4, y: 8}

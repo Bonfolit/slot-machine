@@ -14,9 +14,9 @@ using UnityEngine;
 namespace Core.Runtime.Managers
 {
 
-    public class SlotManager : Manager<SlotManager>
+    public class SlotManager : Manager<SlotManager>,
+        IEventHandler<SlotMachineSpunEvent>
     {
-        private GameManager m_gameManager;
         private SaveManager m_saveManager;
         private SlotCombinationTable m_table;
         public SlotCombinationTable Table => m_table ??= 
@@ -33,8 +33,14 @@ namespace Core.Runtime.Managers
         {
             base.ResolveDependencies();
 
-            m_gameManager = DI.Resolve<GameManager>();
             m_saveManager = DI.Resolve<SaveManager>();
+        }
+
+        public override void SubscribeToEvents()
+        {
+            base.SubscribeToEvents();
+            
+            EventManager.AddListener<SlotMachineSpunEvent>(this);
         }
 
         public override void Initialize()
@@ -57,6 +63,16 @@ namespace Core.Runtime.Managers
                 var updatedEvt = new SlotCombinationsUpdatedEvent(m_nextCombinations);
                 EventManager.SendEvent(ref updatedEvt);
             }
+        }
+
+        public void OnEventReceived(ref SlotMachineSpunEvent evt)
+        {
+            var nextCombination = m_saveManager.Data.NextCombinations[0];
+            SlotSolver.QueueNewCombination(Table, ref m_saveManager.Data.NextCombinations);
+            
+            var selectedEvent = new CombinationSelectedEvent(nextCombination);
+            EventManager.SendEvent(ref selectedEvent);
+
         }
     }
 

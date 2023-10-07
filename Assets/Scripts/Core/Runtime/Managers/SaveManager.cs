@@ -10,7 +10,6 @@ namespace Core.Runtime.Managers
 {
 
     public class SaveManager : Manager<SaveManager>,
-        IEventHandler<SpinCompletedEvent>,
         IEventHandler<SlotCombinationsUpdatedEvent>,
         IEventHandler<CombinationSelectedEvent>
     {
@@ -24,7 +23,6 @@ namespace Core.Runtime.Managers
         {
             base.SubscribeToEvents();
             
-            EventManager.AddListener<SpinCompletedEvent>(this);
             EventManager.AddListener<SlotCombinationsUpdatedEvent>(this, Priority.Critical);
             EventManager.AddListener<CombinationSelectedEvent>(this, Priority.Critical);
         }
@@ -58,13 +56,6 @@ namespace Core.Runtime.Managers
             string json = JsonUtility.ToJson(Data);
 
             File.WriteAllText(m_dataFilePath, json);
-        }
-
-        public void OnEventReceived(ref SpinCompletedEvent evt)
-        {
-            Data.LastCombination = evt.CurrentCombination;
-            
-            SaveUserData();
         }
 
         public void OnEventReceived(ref SlotCombinationsUpdatedEvent evt)
