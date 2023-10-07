@@ -6,11 +6,11 @@ namespace Core.Runtime.Helpers
 
     public static class SlotHelper
     {
-        public static float CalculateVerticalOffset(int slotIndex, SlotLayoutConfig layoutConfig)
+        public static float CalculateVerticalOffset(int slotIndex, SlotConfig config)
         {
-            return (slotIndex - layoutConfig.MarkerIndex) * layoutConfig.VerticalOffset;
+            return (slotIndex - config.MarkerIndex) * config.VerticalOffset;
             // Start from the topmost element's position, then subtract from it as we go up in index
-            return ((((float)layoutConfig.ColumnSize - 1) / 2) - slotIndex) * layoutConfig.VerticalOffset;
+            return ((((float)config.ColumnSize - 1) / 2) - slotIndex) * config.VerticalOffset;
         }
     }
 

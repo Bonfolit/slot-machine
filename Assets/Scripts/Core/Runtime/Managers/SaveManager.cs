@@ -11,7 +11,8 @@ namespace Core.Runtime.Managers
 
     public class SaveManager : Manager<SaveManager>,
         IEventHandler<SpinCompletedEvent>,
-        IEventHandler<SlotCombinationsUpdatedEvent>
+        IEventHandler<SlotCombinationsUpdatedEvent>,
+        IEventHandler<CombinationSelectedEvent>
     {
         private string m_dataFilePath;
         
@@ -25,6 +26,7 @@ namespace Core.Runtime.Managers
             
             EventManager.AddListener<SpinCompletedEvent>(this);
             EventManager.AddListener<SlotCombinationsUpdatedEvent>(this, Priority.Critical);
+            EventManager.AddListener<CombinationSelectedEvent>(this, Priority.Critical);
         }
 
         public override void PreInitialize()
@@ -68,6 +70,13 @@ namespace Core.Runtime.Managers
         public void OnEventReceived(ref SlotCombinationsUpdatedEvent evt)
         {
             Data.NextCombinations = evt.SlotCombinations;
+            
+            SaveUserData();
+        }
+
+        public void OnEventReceived(ref CombinationSelectedEvent evt)
+        {
+            Data.LastCombination = evt.Combination;
             
             SaveUserData();
         }

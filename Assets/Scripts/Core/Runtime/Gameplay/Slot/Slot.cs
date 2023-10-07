@@ -16,6 +16,8 @@ namespace Core.Runtime.Gameplay.Slot
         private int m_index;
         public int Index => m_index;
 
+        private float m_lowerBoundOffset;
+
         private float m_verticalOffset;
         
         private SlotSpriteContainer m_slotSpriteContainer;
@@ -27,7 +29,7 @@ namespace Core.Runtime.Gameplay.Slot
         private SlotType m_type;
         public SlotType Type => m_type;
 
-        private SlotLayoutConfig m_layoutConfig;
+        private SlotConfig m_config;
 
         private PoolObject m_rentedSpriteRendererPoolObject;
         private SpriteRenderer m_spriteRenderer;
@@ -37,11 +39,11 @@ namespace Core.Runtime.Gameplay.Slot
             m_index = index;
         }
 
-        public void Initialize(Transform anchorTransform, SlotType type, SlotLayoutConfig layoutConfig, SlotSpriteContainer slotSpriteContainer, PoolObject spriteRendererPoolObject)
+        public void Initialize(Transform anchorTransform, SlotType type, SlotConfig config, SlotSpriteContainer slotSpriteContainer, PoolObject spriteRendererPoolObject)
         {
             m_anchorTransform = anchorTransform;
             m_type = type;
-            m_layoutConfig = layoutConfig;
+            m_config = config;
             m_slotSpriteContainer = slotSpriteContainer;
             
             m_rentedSpriteRendererPoolObject = PrefabPool.Rent(spriteRendererPoolObject);
@@ -49,9 +51,10 @@ namespace Core.Runtime.Gameplay.Slot
             m_spriteRenderer = (SpriteRenderer)m_rentedSpriteRendererPoolObject.CustomReference;
             m_spriteRenderer.sprite = m_slotSpriteContainer.GetSprite(m_type);
 
-            m_selfTransform.localScale = new Vector3(m_layoutConfig.SlotDimensions.x, m_layoutConfig.SlotDimensions.y, 1f);
+            m_selfTransform.localScale = new Vector3(m_config.SlotDimensions.x, m_config.SlotDimensions.y, 1f);
 
-            m_verticalOffset = SlotHelper.CalculateVerticalOffset(m_index, layoutConfig);
+            m_verticalOffset = SlotHelper.CalculateVerticalOffset(m_index, config);
+            m_lowerBoundOffset = SlotHelper.CalculateVerticalOffset(0, m_config);
             
             SetPosition(new Vector3(0f, m_verticalOffset, 0f));
         }
@@ -64,20 +67,10 @@ namespace Core.Runtime.Gameplay.Slot
 
         public void SetSlide(float slideAmount)
         {
-            var lowerBound = SlotHelper.CalculateVerticalOffset(0, m_layoutConfig);
-            
-            float modOffset = (slideAmount + m_verticalOffset) - lowerBound;
-            modOffset = (modOffset % m_layoutConfig.ColumnTotalHeight + m_layoutConfig.ColumnTotalHeight) % m_layoutConfig.ColumnTotalHeight;
-            modOffset += lowerBound;
-                
-                
-            // var totalOffset = m_verticalOffset + slideAmount;
-            // var modOffset = totalOffset % m_layoutConfig.ColumnTotalHeight;
-            
-            
-            
-            // modOffset += m_layoutConfig.MarkerIndex * m_layoutConfig.VerticalOffset;
-            
+            float modOffset = (slideAmount + m_verticalOffset) - m_lowerBoundOffset;
+            modOffset = (modOffset % m_config.ColumnTotalHeight + m_config.ColumnTotalHeight) % m_config.ColumnTotalHeight;
+            modOffset += m_lowerBoundOffset;
+
             SetPosition(new Vector3(0f, modOffset, 0f));
         }
     }

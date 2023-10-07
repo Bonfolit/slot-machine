@@ -4,6 +4,7 @@ using BonLib.DependencyInjection;
 using BonLib.Events;
 using BonLib.Managers;
 using BonLib.Pooling;
+using Core.Config;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
 using Core.Runtime.Solvers;
@@ -15,8 +16,15 @@ namespace Core.Runtime.Managers
 
     public class SlotManager : Manager<SlotManager>
     {
+        private GameManager m_gameManager;
         private SaveManager m_saveManager;
         private SlotCombinationTable m_table;
+        public SlotCombinationTable Table => m_table ??= 
+            Resources.Load<SlotCombinationTable>("Data/SlotCombinationTable");
+        
+        private SlotConfig m_config;
+        public SlotConfig Config => m_config ??=
+            Resources.Load<SlotConfig>("Config/SlotConfig");
 
         [SerializeField]
         private SlotCombination[] m_nextCombinations;
@@ -25,13 +33,8 @@ namespace Core.Runtime.Managers
         {
             base.ResolveDependencies();
 
+            m_gameManager = DI.Resolve<GameManager>();
             m_saveManager = DI.Resolve<SaveManager>();
-        }
-
-        public override void PreInitialize()
-        {
-            base.PreInitialize();
-            m_table = Resources.Load<SlotCombinationTable>("Data/SlotCombinationTable");
         }
 
         public override void Initialize()
@@ -49,7 +52,7 @@ namespace Core.Runtime.Managers
             }
             else
             {
-                m_nextCombinations = SlotSolver.Solve(m_table, 100, 10000);
+                m_nextCombinations = SlotSolver.Solve(Table, Config.CombinationBufferAmount, 10000);
 
                 var updatedEvt = new SlotCombinationsUpdatedEvent(m_nextCombinations);
                 EventManager.SendEvent(ref updatedEvt);
