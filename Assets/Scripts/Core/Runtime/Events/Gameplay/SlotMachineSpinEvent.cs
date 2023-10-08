@@ -3,7 +3,7 @@
 namespace Core.Runtime.Events.Gameplay
 {
 
-    public struct SlotMachineSpunEvent : IEvent
+    public struct SlotMachineSpinEvent : IEvent
     {
         public bool IsConsumed { get; set; }
     }

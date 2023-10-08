@@ -15,7 +15,7 @@ namespace Core.Runtime.Managers
 {
 
     public class SlotManager : Manager<SlotManager>,
-        IEventHandler<SlotMachineSpunEvent>
+        IEventHandler<SlotMachineSpinEvent>
     {
         private SaveManager m_saveManager;
         private SlotCombinationTable m_table;
@@ -40,7 +40,7 @@ namespace Core.Runtime.Managers
         {
             base.SubscribeToEvents();
             
-            EventManager.AddListener<SlotMachineSpunEvent>(this);
+            EventManager.AddListener<SlotMachineSpinEvent>(this);
         }
 
         public override void Initialize()
@@ -65,7 +65,7 @@ namespace Core.Runtime.Managers
             }
         }
 
-        public void OnEventReceived(ref SlotMachineSpunEvent evt)
+        public void OnEventReceived(ref SlotMachineSpinEvent evt)
         {
             var nextCombination = m_saveManager.Data.NextCombinations[0];
             SlotSolver.QueueNewCombination(Table, ref m_saveManager.Data.NextCombinations);

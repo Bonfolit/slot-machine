@@ -12,7 +12,7 @@ namespace Core.Config
     {
         public List<SlotAnimation> Animations;
 
-        public float StopOffsetPerColumn;
+        public int StartOffsetPerColumnInMs;
 
         public SlotAnimationData GetAnimationData(SlotAnimationType type)
         {

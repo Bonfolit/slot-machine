@@ -11,7 +11,6 @@ namespace Core.Data
         public float InitialDuration;
         public Ease InitialEase;
 
-        // public int LoopSlideCount;
         [MinMaxSlider(2f, 20f)]
         public Vector2Int LoopSpinRange;
         public float LoopDuration; 
