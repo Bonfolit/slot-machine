@@ -44,20 +44,21 @@ namespace Core.Runtime.Gameplay.Slot
             }
         }
 
-        public void SetSlot(SlotType type)
+        public void BlurSlots(float duration)
         {
-            
+            for (var i = 0; i < m_slots.Length; i++)
+            {
+                m_slots[i].Blur(duration);
+            }
         }
-
-        // private void Update()
-        // {
-        //     m_slideAmount += Time.deltaTime * speed;
-        //
-        //     for (var i = 0; i < m_slots.Length; i++)
-        //     {
-        //         m_slots[i].SetSlide(m_slideAmount);
-        //     }
-        // }
+        
+        public void UnblurSlots(float duration)
+        {
+            for (var i = 0; i < m_slots.Length; i++)
+            {
+                m_slots[i].Unblur(duration);
+            }
+        }
     }
 
 }

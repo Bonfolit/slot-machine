@@ -17,5 +17,5 @@ MonoBehaviour:
   VerticalOffset: 2
   MarkerIndex: 3
   CombinationBufferAmount: 100
-  SpinRange: {x: 8, y: 10}
+  SpinRange: {x: 10, y: 10}
   Animation: {fileID: 11400000, guid: 5fa4c27151728e742819a8fe0ef91f5e, type: 2}

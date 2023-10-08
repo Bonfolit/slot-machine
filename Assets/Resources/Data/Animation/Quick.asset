@@ -15,6 +15,7 @@ MonoBehaviour:
   InitialSlideCount: 2
   InitialDuration: 1
   InitialEase: 5
+  LoopSpinRange: {x: 6, y: 8}
   LoopDuration: 2
   LoopEase: 1
   StopSlideCount: 2

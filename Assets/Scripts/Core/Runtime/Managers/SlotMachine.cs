@@ -133,20 +133,16 @@ namespace Core.Runtime.Managers
                         animationData.InitialDuration)
                         .SetEase(animationData.InitialEase));
                 
+                column.BlurSlots(animationData.InitialDuration);
+                
                 sequence.Append(
                     DOTween.To(() => (column.SlideAmount), 
                             slideSetter, 
                             column.SlideAmount + Config.ColumnTotalHeight * spinCount, 
                             animationData.LoopDuration + offset)
-                        .SetEase(animationData.LoopEase));
-                // sequence.Append(
-                //     DOTween.To(() => (column.SlideAmount), 
-                //         slideSetter, 
-                //         column.SlideAmount + Config.ColumnTotalHeight, 
-                //         animationData.LoopDuration)
-                //         .SetEase(animationData.LoopEase)
-                //         .SetLoops(spinCount));
-
+                        .SetEase(animationData.LoopEase)
+                        .OnComplete(() => column.UnblurSlots(animationData.StopDuration)));
+                
                 sequence.Append(
                     DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
@@ -174,6 +170,8 @@ namespace Core.Runtime.Managers
 
             var spunEvt = new SlotMachineSpunEvent();
             EventManager.SendEvent(ref spunEvt);
+
+            
         }
 
         public void OnEventReceived(ref SpinButtonPressedEvent evt)

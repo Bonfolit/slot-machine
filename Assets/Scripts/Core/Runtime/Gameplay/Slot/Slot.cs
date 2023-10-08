@@ -13,6 +13,11 @@ namespace Core.Runtime.Gameplay.Slot
     [System.Serializable]
     public class Slot
     {
+        private static int BLUR_TEXTURE_ID = Shader.PropertyToID("_BlurTex");
+        private static int BLUR_START_TIME_ID = Shader.PropertyToID("_BlurStartTime");
+        private static int BLUR_DURATION_ID = Shader.PropertyToID("_BlurDuration");
+        private static int BLUR_DIRECTION_ID = Shader.PropertyToID("_BlurDirection");
+        
         private int m_index;
         public int Index => m_index;
 
@@ -34,9 +39,13 @@ namespace Core.Runtime.Gameplay.Slot
         private PoolObject m_rentedSpriteRendererPoolObject;
         private SpriteRenderer m_spriteRenderer;
 
+        private MaterialPropertyBlock m_mpb;
+
         public Slot(int index)
         {
             m_index = index;
+
+            m_mpb = new MaterialPropertyBlock();
         }
 
         public void Initialize(Transform anchorTransform, SlotType type, SlotConfig config, SlotSpriteContainer slotSpriteContainer, PoolObject spriteRendererPoolObject)
@@ -49,7 +58,11 @@ namespace Core.Runtime.Gameplay.Slot
             m_rentedSpriteRendererPoolObject = PrefabPool.Rent(spriteRendererPoolObject);
             m_selfTransform = m_rentedSpriteRendererPoolObject.transform;
             m_spriteRenderer = (SpriteRenderer)m_rentedSpriteRendererPoolObject.CustomReference;
-            m_spriteRenderer.sprite = m_slotSpriteContainer.GetSprite(m_type);
+
+            var slotSprites = m_slotSpriteContainer.GetSprites(m_type);
+            m_spriteRenderer.sprite = slotSprites.Sprite;
+            m_mpb.SetTexture(BLUR_TEXTURE_ID, slotSprites.BlurTexture);
+            m_spriteRenderer.SetPropertyBlock(m_mpb);
 
             m_selfTransform.localScale = new Vector3(m_config.SlotDimensions.x, m_config.SlotDimensions.y, 1f);
 
@@ -72,6 +85,22 @@ namespace Core.Runtime.Gameplay.Slot
             modOffset += m_lowerBoundOffset;
 
             SetPosition(new Vector3(0f, modOffset, 0f));
+        }
+
+        public void Blur(float duration)
+        {
+            m_mpb.SetFloat(BLUR_START_TIME_ID, Time.time);
+            m_mpb.SetFloat(BLUR_DURATION_ID, duration);
+            m_mpb.SetFloat(BLUR_DIRECTION_ID, 1f);
+            m_spriteRenderer.SetPropertyBlock(m_mpb);
+        }
+        
+        public void Unblur(float duration)
+        {
+            m_mpb.SetFloat(BLUR_START_TIME_ID, Time.time + duration);
+            m_mpb.SetFloat(BLUR_DURATION_ID, duration);
+            m_mpb.SetFloat(BLUR_DIRECTION_ID, -1f);
+            m_spriteRenderer.SetPropertyBlock(m_mpb);
         }
     }
 
