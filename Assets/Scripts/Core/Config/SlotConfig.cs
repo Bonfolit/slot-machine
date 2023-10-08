@@ -13,10 +13,6 @@ namespace Core.Config
         public float VerticalOffset;
         public int MarkerIndex;
         public int CombinationBufferAmount;
-        [MinMaxSlider(2f, 20f)]
-        public Vector2Int SpinRange;
-
-        public SlotAnimationConfig Animation;
 
         public float ColumnTotalHeight => (float)ColumnSize * VerticalOffset;
     }

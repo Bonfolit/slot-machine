@@ -6,6 +6,7 @@ using BonLib.Managers;
 using BonLib.Pooling;
 using Core.Config;
 using Core.Data;
+using Core.Helpers;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
 using Core.Runtime.Gameplay.VFX;
@@ -31,6 +32,10 @@ namespace Core.Runtime.Managers
         private SlotConfig m_slotConfig;
         public SlotConfig SlotConfig => m_slotConfig ??=
             Resources.Load<SlotConfig>("Config/SlotConfig");
+        
+        private ColumnAnimationConfig m_columnAnimationConfig;
+        public ColumnAnimationConfig ColumnAnimationConfig => m_columnAnimationConfig ??=
+            Resources.Load<ColumnAnimationConfig>("Config/ColumnAnimationConfig");
         
         private ParticleConfig m_particleConfig;
         public ParticleConfig ParticleConfig => m_particleConfig ??=
@@ -102,14 +107,14 @@ namespace Core.Runtime.Managers
             {
                 var column = m_slotColumns[i];
 
-                var animationType = SlotAnimationType.Quick;
+                var animationType = ColumnAnimationType.Quick;
 
                 if (i == m_slotColumns.Length - 1 && firstTwoSlotsEqual)
                 {
-                    animationType = isMatch ? SlotAnimationType.Slow : SlotAnimationType.Normal;
+                    animationType = isMatch ? ColumnAnimationType.Slow : ColumnAnimationType.Normal;
                 }
 
-                var animationData = SlotConfig.Animation.GetAnimationData(animationType);
+                var animationData = ColumnAnimationConfig.GetAnimationData(animationType);
                 
                 var slot = combination.SlotTypes[i];
                 var slideCount = (SlotConfig.MarkerIndex - (int)slot) % SlotConfig.ColumnSize;
@@ -125,7 +130,7 @@ namespace Core.Runtime.Managers
 
                 if (i > 0)
                 {
-                    await Task.Delay(SlotConfig.Animation.StartOffsetPerColumnInMs);
+                    await Task.Delay(ColumnAnimationConfig.StartOffsetPerColumnInMs);
                 }
 
                 spinTasks[i] = SpinColumn(column, animationData, spinCount, slideAmount);
@@ -134,7 +139,7 @@ namespace Core.Runtime.Managers
             await Task.WhenAll(spinTasks);
         }
 
-        private async Task SpinColumn(SlotColumn column, SlotAnimationData animationData, int spinCount, float slideAmount)
+        private async Task SpinColumn(SlotColumn column, ColumnAnimationData columnAnimationData, int spinCount, float slideAmount)
         {
             DOSetter<float> slideSetter = column.SetSlide;
             
@@ -143,28 +148,28 @@ namespace Core.Runtime.Managers
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        column.SlideAmount + SlotConfig.ColumnTotalHeight * animationData.InitialSlideCount, 
-                        animationData.InitialDuration)
-                    .SetEase(animationData.InitialEase));
+                        column.SlideAmount + SlotConfig.ColumnTotalHeight * columnAnimationData.InitialSlideCount, 
+                        columnAnimationData.InitialDuration)
+                    .SetEase(columnAnimationData.InitialEase));
                 
-            column.BlurSlots(animationData.InitialDuration);
+            column.BlurSlots(columnAnimationData.InitialDuration);
                 
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
                         column.SlideAmount + SlotConfig.ColumnTotalHeight * spinCount, 
-                        animationData.LoopDuration)
-                    .SetEase(animationData.LoopEase)
-                    .OnComplete(() => column.UnblurSlots(animationData.StopDuration)));
+                        columnAnimationData.LoopDuration)
+                    .SetEase(columnAnimationData.LoopEase)
+                    .OnComplete(() => column.UnblurSlots(columnAnimationData.StopDuration)));
                 
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        slideAmount + SlotConfig.ColumnTotalHeight * animationData.StopSlideCount, 
-                        animationData.StopDuration)
-                    .SetEase(animationData.StopEase));
+                        slideAmount + SlotConfig.ColumnTotalHeight * columnAnimationData.StopSlideCount, 
+                        columnAnimationData.StopDuration)
+                    .SetEase(columnAnimationData.StopEase));
 
-            var duration = (int)((animationData.InitialDuration + animationData.LoopDuration + animationData.StopDuration) * 1000f);
+            var duration = (int)((columnAnimationData.InitialDuration + columnAnimationData.LoopDuration + columnAnimationData.StopDuration) * 1000f);
 
             await Task.Delay(duration);
         }
@@ -172,7 +177,7 @@ namespace Core.Runtime.Managers
         private async Task Spin()
         {
             m_isSpinning = true;
-            Debug.LogError("Spin started");
+            Debug.Log("Spin started");
             var nextCombination = m_saveManager.Data.NextCombinations[0];
             
             var spinEvt = new SlotMachineSpinEvent();
@@ -180,26 +185,16 @@ namespace Core.Runtime.Managers
 
             await SetCombination(nextCombination);
 
-            var isMatch = true;
-            var slotType = nextCombination.SlotTypes[0];
-            for (var i = 1; i < nextCombination.SlotTypes.Length; i++)
+            if (nextCombination.IsMatch())
             {
-                if (!slotType.Equals(nextCombination.SlotTypes[i]))
-                {
-                    isMatch = false;
-                    break;
-                }
-            }
-
-            if (isMatch)
-            {
+                var slotType = nextCombination.SlotTypes[0];
                 var burstCount = ParticleConfig.GetBurstCount(slotType);
                 
                 m_particleController.SetBurstCount(burstCount);
                 m_particleController.Play();
             }
 
-            Debug.LogError("Spin ended");
+            Debug.Log("Spin ended");
             m_isSpinning = false;
 
             var stopEvt = new SlotMachineStopEvent();

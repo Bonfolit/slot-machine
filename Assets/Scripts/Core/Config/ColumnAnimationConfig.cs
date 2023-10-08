@@ -7,14 +7,14 @@ using UnityEngine;
 namespace Core.Config
 {
 
-    [CreateAssetMenu(fileName = "SlotAnimationConfig", menuName = "Config/Slot Animation Config", order = 0)]
-    public class SlotAnimationConfig : ScriptableObject
+    [CreateAssetMenu(fileName = "ColumnAnimationConfig", menuName = "Config/Column Animation Config", order = 0)]
+    public class ColumnAnimationConfig : ScriptableObject
     {
-        public List<SlotAnimation> Animations;
+        public List<ColumnAnimation> Animations;
 
         public int StartOffsetPerColumnInMs;
 
-        public SlotAnimationData GetAnimationData(SlotAnimationType type)
+        public ColumnAnimationData GetAnimationData(ColumnAnimationType type)
         {
             foreach (var slotAnimation in Animations)
             {
@@ -29,13 +29,13 @@ namespace Core.Config
     }
 
     [System.Serializable]
-    public struct SlotAnimation
+    public struct ColumnAnimation
     {
-        public SlotAnimationType Type;
-        public SlotAnimationData Data;
+        public ColumnAnimationType Type;
+        public ColumnAnimationData Data;
     }
 
-    public enum SlotAnimationType
+    public enum ColumnAnimationType
     {
         Quick,
         Normal,

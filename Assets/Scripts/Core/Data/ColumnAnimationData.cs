@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Core.Data
 {
-    [CreateAssetMenu(fileName = "SlotAnimationData", menuName = "Data/Slot Animation Data", order = 0)]
-    public class SlotAnimationData : ScriptableObject
+    [CreateAssetMenu(fileName = "ColumnAnimationData", menuName = "Data/Column Animation Data", order = 0)]
+    public class ColumnAnimationData : ScriptableObject
     {
         public int InitialSlideCount;
         public float InitialDuration;

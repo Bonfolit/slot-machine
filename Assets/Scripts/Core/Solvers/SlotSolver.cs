@@ -20,6 +20,9 @@ namespace Core.Solvers
             var totalCombinationCount = table.SlotCombinations.Count;
 
             var result = new SlotCombination[count];
+
+            var bestCombinationIndices = new int[count];
+            
             var combinationIndices = new int[count];
             var blockWidths = new float[totalCombinationCount];
             var combinationCounters = new CombinationCounter[totalCombinationCount];
@@ -62,43 +65,58 @@ namespace Core.Solvers
                 totalBlockCount += combinationCounters[i].BlockCounters.Length;
             }
 
+            var candidateAddresses = new (int combinationIndex, int blockIndex)[totalBlockCount];
+            var candidateAddressCount = 0;
+
             var iter = 0;
 
-            while (iter < iterationLimit && CalculateLoss(in totalBlockCount, in combinationCounters) > lossThreshold)
+            var candidateLoss = float.MaxValue;
+            var loss = float.MaxValue;
+
+            while (iter < iterationLimit && CalculateLoss(ref loss, in totalBlockCount, in combinationCounters) > lossThreshold)
             {
                 iter++;
-
-                var found = false;
-                var target = (combinationIndex: -1, blockIndex: -1);
                 
-                var randCombinationIndex = random.Next(0, totalCombinationCount);
-                var randBlockIndex = random.Next(0, blockCounts[randCombinationIndex]);
+                candidateAddressCount = 0;
 
-                const int EMPTY_BLOCK_FIND_ITER_LIMIT = 500;
-
-                var emptyBlockIter = 0;
-                while (emptyBlockIter < EMPTY_BLOCK_FIND_ITER_LIMIT)
+                if (loss < candidateLoss)
                 {
-                    emptyBlockIter++;
+                    candidateLoss = loss;
                     
-                    if (combinationCounters[randCombinationIndex].BlockCounters[randBlockIndex] == 0)
+                    Array.Copy(combinationIndices, 0, bestCombinationIndices, 0, count);
+                }
+
+                var target = (combinationIndex: -1, blockIndex: -1);
+
+                var searchAmount = int.MaxValue;
+
+                for (int i = 0; i < totalCombinationCount; i++)
+                {
+                    var minCount = combinationCounters[i].BlockCounters.Min();
+                    searchAmount = searchAmount > minCount ? minCount : searchAmount;
+                }
+
+                for (int i = 0; i < totalCombinationCount; i++)
+                {
+                    for (int j = 0; j < combinationCounters[i].BlockCounters.Length; j++)
                     {
-                        target = (randCombinationIndex, randBlockIndex);
-                        break;
+                        if (combinationCounters[i].BlockCounters[j] == searchAmount)
+                        {
+                            candidateAddresses[candidateAddressCount++] = (i, j);
+                        }
                     }
-                    
-                    randCombinationIndex = random.Next(0, totalCombinationCount);
-                    randBlockIndex = random.Next(0, blockCounts[randCombinationIndex]);
                 }
 
-                if (emptyBlockIter == EMPTY_BLOCK_FIND_ITER_LIMIT)
-                {
-                    continue;
-                }
-
+                target = candidateAddresses[random.Next(0, candidateAddressCount)];
+                
                 var width = blockWidths[target.combinationIndex];
-                var startPos = Mathf.FloorToInt(target.blockIndex * width);
-                var targetIndex = random.Next(startPos, startPos + Mathf.CeilToInt(width));
+                var startPercentage = target.blockIndex * width;
+                var endPercentage = startPercentage + width;
+                var startPos = Mathf.FloorToInt(startPercentage) + (target.blockIndex != 0 ? 1 : 0);
+                var endPos = Mathf.CeilToInt(endPercentage);
+                var targetIndex = random.Next(startPos, endPos);
+
+                targetIndex = Mathf.Clamp(targetIndex, 0, count - 1);
 
                 var prevCombination = combinationIndices[targetIndex];
                 var prevBlockWidth = blockWidths[prevCombination];
@@ -111,6 +129,13 @@ namespace Core.Solvers
                 
                 // TO-DO: There is a bug that causes empty blocks to be overridden
             }
+
+            if (iter == iterationLimit)
+            {
+                Array.Copy(bestCombinationIndices, 0, combinationIndices, 0, count);
+                loss = candidateLoss;
+            }
+
 
             for (var i = 0; i < count; i++)
             {
@@ -131,6 +156,7 @@ namespace Core.Solvers
             }
 
             Debug.LogWarning($"Iteration reached: {iter}");
+            Debug.LogWarning($"Loss in Solver: {loss}");
 
             return result;
         }
@@ -144,8 +170,6 @@ namespace Core.Solvers
 
             current[^1] = default(SlotCombination);
             
-            var random = new Random();
-
             var totalCombinationCount = table.SlotCombinations.Count;
 
             var lastBlockCounts = new float[totalCombinationCount];
@@ -174,20 +198,24 @@ namespace Core.Solvers
             current[^1] = table.SlotCombinations[candidateCombinationIndex].Combination;
         }
         
-        public static float CalculateLoss(in int totalBlockCount, in CombinationCounter[] combinationCounters)
+        public static float CalculateLoss(ref float loss, in int totalBlockCount, in CombinationCounter[] combinationCounters)
         {
-            var loss = 0;
+            loss = 0f;
+            
+            var cumulativeLoss = 0;
             for (var i = 0; i < combinationCounters.Length; i++)
             {
                 for (int j = 0; j < combinationCounters[i].BlockCounters.Length; j++)
                 {
-                    loss += Math.Abs(1 - combinationCounters[i].BlockCounters[j]);
+                    cumulativeLoss += Math.Abs(1 - combinationCounters[i].BlockCounters[j]);
                 }
             }
 
-            var lossRatio = (float)loss / (float)totalBlockCount;
+            var lossRatio = (float)cumulativeLoss / (float)totalBlockCount;
 
-            return (float)loss / (float)totalBlockCount;
+            loss = (float)cumulativeLoss / (float)totalBlockCount;
+
+            return loss;
         }
     }
     
@@ -202,9 +230,17 @@ namespace Core.Solvers
         {
             if (BlockCounters[blockIndex] == 0 && amount < 0)
             {
-                Debug.LogError("This should never happen");
+                Debug.LogWarning("This should never happen");
             }
             BlockCounters[blockIndex] += amount;
+        }
+
+        public void Reset()
+        {
+            for (var i = 0; i < BlockCounters.Length; i++)
+            {
+                BlockCounters[i] = 0;
+            }
         }
     }
 }

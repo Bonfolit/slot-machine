@@ -16,8 +16,8 @@ namespace Core.Runtime.Managers
         private string m_dataFilePath;
         
         [SerializeField]
-        private PlayerData m_data;
-        public PlayerData Data => m_data ??= ScriptableObject.CreateInstance<PlayerData>();
+        private GameData m_data;
+        public GameData Data => m_data ??= ScriptableObject.CreateInstance<GameData>();
 
         public override void SubscribeToEvents()
         {
@@ -31,7 +31,7 @@ namespace Core.Runtime.Managers
         {
             base.PreInitialize();
             
-            m_dataFilePath = Path.Combine(Application.persistentDataPath, "playerData.json");
+            m_dataFilePath = Path.Combine(Application.persistentDataPath, "gameData.json");
             
             LoadUserData();
         }

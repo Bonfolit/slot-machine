@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 43f8578a7cb1420c95ec0a120be80b6b, type: 3}
-  m_Name: SlotAnimationConfig
+  m_Name: ColumnAnimationConfig
   m_EditorClassIdentifier: 
   Animations:
   - Type: 0
