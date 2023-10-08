@@ -8,6 +8,7 @@ using Core.Config;
 using Core.Data;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
+using Core.Runtime.Gameplay.VFX;
 using DG.Tweening;
 using DG.Tweening.Core;
 using NaughtyAttributes;
@@ -27,15 +28,22 @@ namespace Core.Runtime.Managers
         public SlotSpriteContainer SlotSpriteContainer => m_slotSpriteContainer ??=
             Resources.Load<SlotSpriteContainer>("Data/SlotSpriteContainer");
         
-        private SlotConfig m_config;
-        public SlotConfig Config => m_config ??=
+        private SlotConfig m_slotConfig;
+        public SlotConfig SlotConfig => m_slotConfig ??=
             Resources.Load<SlotConfig>("Config/SlotConfig");
+        
+        private ParticleConfig m_particleConfig;
+        public ParticleConfig ParticleConfig => m_particleConfig ??=
+            Resources.Load<ParticleConfig>("Config/ParticleConfig");
 
         [SerializeField]
         private PoolObject m_spriteRendererPoolObject;
         
         [SerializeField]
         private SlotColumn[] m_slotColumns;
+
+        [SerializeField]
+        private ParticleController m_particleController;
 
         private bool m_isSpinning = false;
 
@@ -68,7 +76,7 @@ namespace Core.Runtime.Managers
             
             for (var i = 0; i < m_slotColumns.Length; i++)
             {
-                m_slotColumns[i].Initialize(SlotSpriteContainer, Config, m_spriteRendererPoolObject, Config.ColumnTotalHeight);
+                m_slotColumns[i].Initialize(SlotSpriteContainer, SlotConfig, m_spriteRendererPoolObject, SlotConfig.ColumnTotalHeight);
             }
             
             SetCombination(m_saveManager.Data.LastCombination, true);
@@ -98,21 +106,14 @@ namespace Core.Runtime.Managers
 
                 if (i == m_slotColumns.Length - 1 && firstTwoSlotsEqual)
                 {
-                    if (isMatch)
-                    {
-                        animationType = SlotAnimationType.Slow;
-                    }
-                    else
-                    {
-                        animationType = SlotAnimationType.Normal;
-                    }
+                    animationType = isMatch ? SlotAnimationType.Slow : SlotAnimationType.Normal;
                 }
 
-                var animationData = Config.Animation.GetAnimationData(animationType);
+                var animationData = SlotConfig.Animation.GetAnimationData(animationType);
                 
                 var slot = combination.SlotTypes[i];
-                var slideCount = (Config.MarkerIndex - (int)slot) % Config.ColumnSize;
-                var slideAmount = Config.VerticalOffset * slideCount;
+                var slideCount = (SlotConfig.MarkerIndex - (int)slot) % SlotConfig.ColumnSize;
+                var slideAmount = SlotConfig.VerticalOffset * slideCount;
 
                 var spinCount = m_random.Next(animationData.LoopSpinRange.x, animationData.LoopSpinRange.y);
 
@@ -124,7 +125,7 @@ namespace Core.Runtime.Managers
 
                 if (i > 0)
                 {
-                    await Task.Delay(Config.Animation.StartOffsetPerColumnInMs);
+                    await Task.Delay(SlotConfig.Animation.StartOffsetPerColumnInMs);
                 }
 
                 spinTasks[i] = SpinColumn(column, animationData, spinCount, slideAmount);
@@ -142,7 +143,7 @@ namespace Core.Runtime.Managers
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        column.SlideAmount + Config.ColumnTotalHeight * animationData.InitialSlideCount, 
+                        column.SlideAmount + SlotConfig.ColumnTotalHeight * animationData.InitialSlideCount, 
                         animationData.InitialDuration)
                     .SetEase(animationData.InitialEase));
                 
@@ -151,7 +152,7 @@ namespace Core.Runtime.Managers
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        column.SlideAmount + Config.ColumnTotalHeight * spinCount, 
+                        column.SlideAmount + SlotConfig.ColumnTotalHeight * spinCount, 
                         animationData.LoopDuration)
                     .SetEase(animationData.LoopEase)
                     .OnComplete(() => column.UnblurSlots(animationData.StopDuration)));
@@ -159,7 +160,7 @@ namespace Core.Runtime.Managers
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        slideAmount + Config.ColumnTotalHeight * animationData.StopSlideCount, 
+                        slideAmount + SlotConfig.ColumnTotalHeight * animationData.StopSlideCount, 
                         animationData.StopDuration)
                     .SetEase(animationData.StopEase));
 
@@ -178,6 +179,25 @@ namespace Core.Runtime.Managers
             EventManager.SendEvent(ref spinEvt);
 
             await SetCombination(nextCombination);
+
+            var isMatch = true;
+            var slotType = nextCombination.SlotTypes[0];
+            for (var i = 1; i < nextCombination.SlotTypes.Length; i++)
+            {
+                if (!slotType.Equals(nextCombination.SlotTypes[i]))
+                {
+                    isMatch = false;
+                    break;
+                }
+            }
+
+            if (isMatch)
+            {
+                var burstCount = ParticleConfig.GetBurstCount(slotType);
+                
+                m_particleController.SetBurstCount(burstCount);
+                m_particleController.Play();
+            }
 
             Debug.LogError("Spin ended");
             m_isSpinning = false;

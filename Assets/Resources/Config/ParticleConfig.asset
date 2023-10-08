@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8300e7157e71418eb6b6f53f29a121f7, type: 3}
+  m_Name: ParticleConfig
+  m_EditorClassIdentifier: 
+  ParticleDatas:
+  - SlotType: 0
+    BurstCount: 6
+  - SlotType: 1
+    BurstCount: 10
+  - SlotType: 2
+    BurstCount: 15
+  - SlotType: 3
+    BurstCount: 20
+  - SlotType: 4
+    BurstCount: 30
