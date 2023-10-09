@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6260e55a4f294ce1aefc0a252e42f424, type: 3}
   m_Name: CameraConfig
   m_EditorClassIdentifier: 
-  m_shakeSpeed: {x: 0.1, y: 0.1, z: 0}
-  m_shakeDuration: 0.3
-  m_vibrato: 40
-  m_randomness: 90
+  ShakeStrength: {x: 0.1, y: 0.1, z: 0}
+  ShakeDuration: 0.2
+  ShakeVibrato: 30
+  ShakeRandomness: 90

@@ -48,7 +48,7 @@ namespace Core.Runtime.Managers
         [SerializeField]
         private SlotColumn[] m_slotColumns;
 
-        private bool m_isSpinning = false;
+        private Task m_spinTask;
 
         public override void ResolveDependencies()
         {
@@ -69,8 +69,6 @@ namespace Core.Runtime.Managers
             base.Initialize();
 
             m_random = new Random();
-            
-            m_isSpinning = false;
         }
 
         public override void LateInitialize()
@@ -87,26 +85,20 @@ namespace Core.Runtime.Managers
 
         public void OnEventReceived(ref SpinButtonPressedEvent evt)
         {
-            if (m_isSpinning)
+            if (m_spinTask != null && !m_spinTask.IsCompleted)
                 return;
 
-            Spin();
+            m_spinTask = Spin();
         }
 
         private async Task Spin()
         {
-            m_isSpinning = true;
-            Debug.Log("Spin started");
-            
             var nextCombination = m_slotManager.GetNextCombination();
 
             await SetCombination(nextCombination);
 
             var evt = new SpinEndedEvent(nextCombination);
             EventManager.SendEvent(ref evt);
-
-            Debug.Log("Spin ended");
-            m_isSpinning = false;
         }
         
         private async Task SetCombination(SlotCombination combination, bool instant = false)
@@ -142,7 +134,7 @@ namespace Core.Runtime.Managers
 
                 if (i > 0)
                 {
-                    await Task.Delay(ColumnAnimationConfig.StartOffsetPerColumnInMs);
+                    await Task.Delay(ColumnAnimationConfig.StartOffsetPerColumnInMs * i);
                 }
 
                 spinTasks[i] = SpinColumn(column, animationData, spinCount, slideAmount);

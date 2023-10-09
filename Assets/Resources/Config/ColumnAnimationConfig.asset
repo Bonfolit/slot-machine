@@ -19,4 +19,4 @@ MonoBehaviour:
     Data: {fileID: 11400000, guid: 7321b2d864cb43b47b52973db8998053, type: 2}
   - Type: 2
     Data: {fileID: 11400000, guid: b1396a0cb799abb4d9cd7ed44c8c8bc8, type: 2}
-  StartOffsetPerColumnInMs: 50
+  StartOffsetPerColumnInMs: 100
