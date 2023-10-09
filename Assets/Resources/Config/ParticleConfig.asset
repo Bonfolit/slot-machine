@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ParticleDatas:
   - SlotType: 0
-    BurstCount: 6
+    BurstCount: 40
   - SlotType: 1
-    BurstCount: 10
+    BurstCount: 80
   - SlotType: 2
-    BurstCount: 15
+    BurstCount: 100
   - SlotType: 3
-    BurstCount: 20
+    BurstCount: 200
   - SlotType: 4
-    BurstCount: 30
+    BurstCount: 500

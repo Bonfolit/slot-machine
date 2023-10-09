@@ -27,9 +27,6 @@ namespace Core.Runtime.Managers
         public SlotConfig Config => m_config ??=
             Resources.Load<SlotConfig>("Config/SlotConfig");
 
-        [SerializeField]
-        private SlotCombination[] m_nextCombinations;
-
         public override void ResolveDependencies()
         {
             base.ResolveDependencies();

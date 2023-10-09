@@ -14,6 +14,7 @@ using DG.Tweening;
 using DG.Tweening.Core;
 using NaughtyAttributes;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = System.Random;
 
 namespace Core.Runtime.Managers
@@ -47,8 +48,11 @@ namespace Core.Runtime.Managers
         [SerializeField]
         private SlotColumn[] m_slotColumns;
 
+        [FormerlySerializedAs("m_particleController")] [SerializeField]
+        private ParticleController m_coinParticleController;
+        
         [SerializeField]
-        private ParticleController m_particleController;
+        private ParticleController m_blastParticleController;
 
         private bool m_isSpinning = false;
 
@@ -109,8 +113,9 @@ namespace Core.Runtime.Managers
                 var slotType = nextCombination.SlotTypes[0];
                 var burstCount = ParticleConfig.GetBurstCount(slotType);
                 
-                m_particleController.SetBurstCount(burstCount);
-                m_particleController.Play();
+                m_coinParticleController.SetBurstCount(burstCount);
+                m_coinParticleController.Play();
+                m_blastParticleController.Play();
             }
 
             Debug.Log("Spin ended");

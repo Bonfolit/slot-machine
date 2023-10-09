@@ -160,43 +160,6 @@ namespace Core.Solvers
 
             return result;
         }
-
-        public static void QueueNewCombination(SlotCombinationTable table, ref SlotCombination[] current)
-        {
-            for (int i = 1; i < current.Length; i++)
-            {
-                current[i - 1] = current[i];
-            }
-
-            current[^1] = default(SlotCombination);
-            
-            var totalCombinationCount = table.SlotCombinations.Count;
-
-            var lastBlockCounts = new float[totalCombinationCount];
-            var candidateCombinationIndices = new int[totalCombinationCount];
-            var blockWidths = new float[totalCombinationCount];
-
-            for (var i = 0; i < totalCombinationCount; i++)
-            {
-                var blockWidth = ((float)current.Length / 100f) / table.SlotCombinations[i].Probability;
-                blockWidths[i] = blockWidth;
-
-                var combinationCount = 0;
-                for (int j = current.Length - 2; j > current.Length - blockWidth - 2; j--)
-                {
-                    if (current[j].Equals(table.SlotCombinations[i].Combination))
-                    {
-                        combinationCount++;
-                    }
-                }
-
-                lastBlockCounts[i] = combinationCount;
-            }
-
-            var candidateCombinationIndex = Array.IndexOf(lastBlockCounts, lastBlockCounts.Min());
-
-            current[^1] = table.SlotCombinations[candidateCombinationIndex].Combination;
-        }
         
         public static float CalculateLoss(ref float loss, in int totalBlockCount, in CombinationCounter[] combinationCounters)
         {
@@ -211,15 +174,11 @@ namespace Core.Solvers
                 }
             }
 
-            var lossRatio = (float)cumulativeLoss / (float)totalBlockCount;
-
             loss = (float)cumulativeLoss / (float)totalBlockCount;
 
             return loss;
         }
     }
-    
-    
 
     [StructLayout(LayoutKind.Sequential, Pack=1)]
     public struct CombinationCounter
