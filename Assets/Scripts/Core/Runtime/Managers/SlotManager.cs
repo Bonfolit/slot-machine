@@ -5,6 +5,7 @@ using BonLib.Events;
 using BonLib.Managers;
 using BonLib.Pooling;
 using Core.Config;
+using Core.Data;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
 using Core.Solvers;
@@ -15,7 +16,7 @@ namespace Core.Runtime.Managers
 {
 
     public class SlotManager : Manager<SlotManager>,
-        IEventHandler<SlotMachineSpinEvent>
+        IEventHandler<SetSlotCombinationsEvent>
     {
         private SaveManager m_saveManager;
         private SlotCombinationTable m_table;
@@ -40,39 +41,38 @@ namespace Core.Runtime.Managers
         {
             base.SubscribeToEvents();
             
-            EventManager.AddListener<SlotMachineSpinEvent>(this);
+            EventManager.AddListener<SetSlotCombinationsEvent>(this);
         }
 
-        public override void Initialize()
+        public void SetCombinations(GameData gameData, bool initialGeneration)
         {
-            base.Initialize();
-            
-            SetSlotCombinations();
-        }
+            gameData.Combinations = SlotSolver.Solve(
+                Table, 
+                Config.CombinationBufferAmount, 
+                Config.IterationLimit, 
+                Config.LossThreshold);
 
-        private void SetSlotCombinations()
-        {
-            if (m_saveManager.Data.NextCombinations != null)
+            if (initialGeneration)
             {
-                m_nextCombinations = m_saveManager.Data.NextCombinations;
+                gameData.LastCombination = Config.InitialCombination;
             }
-            else
-            {
-                m_nextCombinations = SlotSolver.Solve(Table, Config.CombinationBufferAmount, 10000);
 
-                var updatedEvt = new SlotCombinationsUpdatedEvent(m_nextCombinations);
-                EventManager.SendEvent(ref updatedEvt);
-            }
+            gameData.CombinationIndex = -1;
         }
 
-        public void OnEventReceived(ref SlotMachineSpinEvent evt)
+        public SlotCombination GetNextCombination()
         {
-            var nextCombination = m_saveManager.Data.NextCombinations[0];
-            SlotSolver.QueueNewCombination(Table, ref m_saveManager.Data.NextCombinations);
-            
-            var selectedEvent = new CombinationSelectedEvent(nextCombination);
-            EventManager.SendEvent(ref selectedEvent);
+            return m_saveManager.GetNextCombination();
+        }
 
+        public SlotCombination GetLastCombination()
+        {
+            return m_saveManager.GetLastCombination();
+        }
+
+        public void OnEventReceived(ref SetSlotCombinationsEvent evt)
+        {
+            SetCombinations(evt.GameData, evt.InitialGeneration);
         }
     }
 

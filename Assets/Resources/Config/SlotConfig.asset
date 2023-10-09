@@ -16,6 +16,8 @@ MonoBehaviour:
   SlotDimensions: {x: 0.8, y: 0.8}
   VerticalOffset: 2
   MarkerIndex: 3
+  InitialCombination:
+    SlotTypes: 000000000300000001000000
   CombinationBufferAmount: 100
-  SpinRange: {x: 10, y: 10}
-  Animation: {fileID: 11400000, guid: 5fa4c27151728e742819a8fe0ef91f5e, type: 2}
+  IterationLimit: 10000
+  LossThreshold: 0.02

@@ -23,7 +23,7 @@ namespace Core.Runtime.Managers
         IEventHandler<SpinButtonPressedEvent>
     {
         private Random m_random;
-        private SaveManager m_saveManager;
+        private SlotManager m_slotManager;
         
         private SlotSpriteContainer m_slotSpriteContainer;
         public SlotSpriteContainer SlotSpriteContainer => m_slotSpriteContainer ??=
@@ -56,7 +56,7 @@ namespace Core.Runtime.Managers
         {
             base.ResolveDependencies();
 
-            m_saveManager = DI.Resolve<SaveManager>();
+            m_slotManager = DI.Resolve<SlotManager>();
         }
 
         public override void SubscribeToEvents()
@@ -84,22 +84,43 @@ namespace Core.Runtime.Managers
                 m_slotColumns[i].Initialize(SlotSpriteContainer, SlotConfig, m_spriteRendererPoolObject, SlotConfig.ColumnTotalHeight);
             }
             
-            SetCombination(m_saveManager.Data.LastCombination, true);
+            SetCombination(m_slotManager.GetLastCombination(), true);
         }
 
+        public void OnEventReceived(ref SpinButtonPressedEvent evt)
+        {
+            if (m_isSpinning)
+                return;
+
+            Spin();
+        }
+
+        private async Task Spin()
+        {
+            m_isSpinning = true;
+            Debug.Log("Spin started");
+            
+            var nextCombination = m_slotManager.GetNextCombination();
+
+            await SetCombination(nextCombination);
+
+            if (nextCombination.IsMatch())
+            {
+                var slotType = nextCombination.SlotTypes[0];
+                var burstCount = ParticleConfig.GetBurstCount(slotType);
+                
+                m_particleController.SetBurstCount(burstCount);
+                m_particleController.Play();
+            }
+
+            Debug.Log("Spin ended");
+            m_isSpinning = false;
+        }
+        
         private async Task SetCombination(SlotCombination combination, bool instant = false)
         {
             var firstTwoSlotsEqual = combination.SlotTypes[0].Equals(combination.SlotTypes[1]);
-            var isMatch = true;
-            var slotType = combination.SlotTypes[0];
-            for (int i = 1; i < combination.SlotTypes.Length; i++)
-            {
-                if (!combination.SlotTypes[i].Equals(slotType))
-                {
-                    isMatch = false;
-                    break;
-                }
-            }
+            var isMatch = combination.IsMatch();
 
             var spinTasks = new Task[m_slotColumns.Length];
 
@@ -174,40 +195,6 @@ namespace Core.Runtime.Managers
             await Task.Delay(duration);
         }
 
-        private async Task Spin()
-        {
-            m_isSpinning = true;
-            Debug.Log("Spin started");
-            var nextCombination = m_saveManager.Data.NextCombinations[0];
-            
-            var spinEvt = new SlotMachineSpinEvent();
-            EventManager.SendEvent(ref spinEvt);
-
-            await SetCombination(nextCombination);
-
-            if (nextCombination.IsMatch())
-            {
-                var slotType = nextCombination.SlotTypes[0];
-                var burstCount = ParticleConfig.GetBurstCount(slotType);
-                
-                m_particleController.SetBurstCount(burstCount);
-                m_particleController.Play();
-            }
-
-            Debug.Log("Spin ended");
-            m_isSpinning = false;
-
-            var stopEvt = new SlotMachineStopEvent();
-            EventManager.SendEvent(ref stopEvt);
-        }
-
-        public void OnEventReceived(ref SpinButtonPressedEvent evt)
-        {
-            if (m_isSpinning)
-                return;
-
-            Spin();
-        }
     }
 
 }

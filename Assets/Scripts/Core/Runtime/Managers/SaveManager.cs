@@ -8,10 +8,7 @@ using UnityEngine;
 
 namespace Core.Runtime.Managers
 {
-
-    public class SaveManager : Manager<SaveManager>,
-        IEventHandler<SlotCombinationsUpdatedEvent>,
-        IEventHandler<CombinationSelectedEvent>
+    public class SaveManager : Manager<SaveManager>
     {
         private string m_dataFilePath;
         
@@ -19,13 +16,6 @@ namespace Core.Runtime.Managers
         private GameData m_data;
         public GameData Data => m_data ??= ScriptableObject.CreateInstance<GameData>();
 
-        public override void SubscribeToEvents()
-        {
-            base.SubscribeToEvents();
-            
-            EventManager.AddListener<SlotCombinationsUpdatedEvent>(this, Priority.Critical);
-            EventManager.AddListener<CombinationSelectedEvent>(this, Priority.Critical);
-        }
 
         public override void PreInitialize()
         {
@@ -46,7 +36,9 @@ namespace Core.Runtime.Managers
             }
             else
             {
-                Data.LastCombination = new SlotCombination(SlotType.A, SlotType.Bonus, SlotType.Jackpot);
+                var evt = new SetSlotCombinationsEvent(Data, true);
+                EventManager.SendEvent(ref evt);
+                
                 SaveUserData();
             }
         }
@@ -58,18 +50,24 @@ namespace Core.Runtime.Managers
             File.WriteAllText(m_dataFilePath, json);
         }
 
-        public void OnEventReceived(ref SlotCombinationsUpdatedEvent evt)
+        public SlotCombination GetNextCombination()
         {
-            Data.NextCombinations = evt.SlotCombinations;
-            
-            SaveUserData();
-        }
+            var combination = Data.GetNextCombination();
 
-        public void OnEventReceived(ref CombinationSelectedEvent evt)
-        {
-            Data.LastCombination = evt.Combination;
+            if (Data.ReachedFinalCombination())
+            {
+                var evt = new SetSlotCombinationsEvent(Data);
+                EventManager.SendEvent(ref evt);
+            }
             
             SaveUserData();
+            
+            return combination;
+        }
+        
+        public SlotCombination GetLastCombination()
+        {
+            return Data.LastCombination;
         }
     }
 }
