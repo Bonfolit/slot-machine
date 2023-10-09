@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Core.Helpers;
 using UnityEngine;
 
 namespace Core.Runtime.Gameplay.Slot
@@ -11,9 +12,15 @@ namespace Core.Runtime.Gameplay.Slot
         [SerializeField]
         public SlotType[] SlotTypes;
 
+        private bool? m_isMatch;
+        
+        public bool IsMatch => m_isMatch ??= this.IsMatch();
+
         public SlotCombination(SlotType type1, SlotType type2, SlotType type3)
         {
             SlotTypes = new [] { type1, type2, type3 };
+            
+            m_isMatch = null;
         }
 
         public bool IsEqualTo(SlotCombination other)

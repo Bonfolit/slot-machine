@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using BonLib.Events;
+using Core.Runtime.Events.Gameplay;
+using UnityEngine;
 
 namespace Core.Runtime.Gameplay.VFX
 {

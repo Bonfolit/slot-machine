@@ -48,12 +48,6 @@ namespace Core.Runtime.Managers
         [SerializeField]
         private SlotColumn[] m_slotColumns;
 
-        [FormerlySerializedAs("m_particleController")] [SerializeField]
-        private ParticleController m_coinParticleController;
-        
-        [SerializeField]
-        private ParticleController m_blastParticleController;
-
         private bool m_isSpinning = false;
 
         public override void ResolveDependencies()
@@ -108,15 +102,8 @@ namespace Core.Runtime.Managers
 
             await SetCombination(nextCombination);
 
-            if (nextCombination.IsMatch())
-            {
-                var slotType = nextCombination.SlotTypes[0];
-                var burstCount = ParticleConfig.GetBurstCount(slotType);
-                
-                m_coinParticleController.SetBurstCount(burstCount);
-                m_coinParticleController.Play();
-                m_blastParticleController.Play();
-            }
+            var evt = new SpinEndedEvent(nextCombination);
+            EventManager.SendEvent(ref evt);
 
             Debug.Log("Spin ended");
             m_isSpinning = false;
@@ -125,7 +112,6 @@ namespace Core.Runtime.Managers
         private async Task SetCombination(SlotCombination combination, bool instant = false)
         {
             var firstTwoSlotsEqual = combination.SlotTypes[0].Equals(combination.SlotTypes[1]);
-            var isMatch = combination.IsMatch();
 
             var spinTasks = new Task[m_slotColumns.Length];
 
@@ -137,7 +123,7 @@ namespace Core.Runtime.Managers
 
                 if (i == m_slotColumns.Length - 1 && firstTwoSlotsEqual)
                 {
-                    animationType = isMatch ? ColumnAnimationType.Slow : ColumnAnimationType.Normal;
+                    animationType = combination.IsMatch ? ColumnAnimationType.Slow : ColumnAnimationType.Normal;
                 }
 
                 var animationData = ColumnAnimationConfig.GetAnimationData(animationType);
