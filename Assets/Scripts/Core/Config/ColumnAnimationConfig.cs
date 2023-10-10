@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Core.Data;
-using DG.Tweening;
 using UnityEngine;
 
 namespace Core.Config

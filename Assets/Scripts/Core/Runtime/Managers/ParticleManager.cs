@@ -1,11 +1,9 @@
-﻿using System;
-using BonLib.Events;
+﻿using BonLib.Events;
 using BonLib.Managers;
 using Core.Config;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.VFX;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Core.Runtime.Managers
 {

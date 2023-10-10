@@ -1,5 +1,4 @@
 ﻿using Core.Runtime.Gameplay.Slot;
-using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Serialization;
 

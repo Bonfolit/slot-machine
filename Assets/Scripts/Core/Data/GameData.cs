@@ -1,6 +1,5 @@
 ﻿using Core.Runtime.Gameplay.Slot;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Core.Data
 {

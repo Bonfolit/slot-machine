@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
+using Core.Helpers;
+using Core.Misc;
 using Core.Runtime.Gameplay.Slot;
 using UnityEngine;
 using Random = System.Random;
@@ -10,15 +11,16 @@ namespace Core.Solvers
     public static class SlotSolver
     {
         /// <summary>
-        /// <para>A genetic-inspired knapsack solver for slot combination sequencing.</para>
-        /// <para>Starts out with generating "count" random slot combinations and calculating block counts for each combination
-        /// with respect to its probability, then replaces a random combination on a random block with the lowest count.</para>
+        /// <para><b>A genetic-inspired knapsack solver for slot combination sequencing.</b></para>
+        /// <para>Starts out with generating "count" random slot combinations and calculating block counts for each
+        /// combination with respect to its probability, then replaces a random combination on a random block with the
+        /// lowest count in each iteration.</para>
         /// <para>Calculates a loss value with blocks that don't have exactly 1 element, and iterates until either
-        /// it hits the lossThreshold, or the iterationLimit. In every iteration, a fallback combination is cached,
+        /// it hits the "lossThreshold", or the "iterationLimit". In every iteration, a fallback combination is cached,
         /// and in the case of hitting the iteration limit, the fallback combination is used. </para>
         /// <para><b>Note:</b> <br></br>This solver only optimizes the probability table starting with index 0.
         /// It does not account the fact that as the game progresses, calculating remaining combination block counts
-        /// will not yield optimized results. For example, for count: 100 and the calculated loss for the combination
+        /// will not yield optimized results. For example: for count = 100, the calculated loss for the combination
         /// index span [0,99] might be 0.02, but it's probably much higher, let's say for the span [8,107].
         /// Continuous loss calculations are not taken into account when the solver is created.</para>
         /// </summary>
@@ -35,7 +37,6 @@ namespace Core.Solvers
             
             var combinationIndices = new int[count];
             var blockWidths = new float[totalCombinationCount];
-            var combinationCounters = new CombinationCounter[totalCombinationCount];
 
             for (var i = 0; i < totalCombinationCount; i++)
             {
@@ -48,28 +49,11 @@ namespace Core.Solvers
                 var combinationIndex = random.Next(0, totalCombinationCount);
                 
                 combinationIndices[i] = combinationIndex;
-
-                var width = blockWidths[combinationIndex];
-
-                var blockIndex = (int)((float)i / width);
-
-                if (combinationCounters[combinationIndex].BlockCounters == null)
-                {
-                    combinationCounters[combinationIndex].BlockCounters = new int[Mathf.RoundToInt(table.SlotCombinations[combinationIndex].Probability * count)];
-                    Array.Fill(combinationCounters[combinationIndex].BlockCounters, 0); 
-                }
-                
-                combinationCounters[combinationIndex].AddCounter(blockIndex, 1);
             }
 
-            var blockCounts = new int[totalCombinationCount];
-            for (var i = 0; i < blockCounts.Length; i++)
-            {
-                blockCounts[i] = combinationCounters[i].BlockCounters.Length;
-            }
+            var combinationCounters = SlotHelper.GetCombinationCounters(in combinationIndices, table);
 
             var totalBlockCount = 0;
-
             for (int i = 0; i < combinationCounters.Length; i++)
             {
                 totalBlockCount += combinationCounters[i].BlockCounters.Length;
@@ -134,8 +118,6 @@ namespace Core.Solvers
                 
                 combinationCounters[prevCombination].AddCounter(prevBlock, -1);
                 combinationCounters[target.combinationIndex].AddCounter(target.blockIndex, 1);
-                
-                // TO-DO: There is a bug that causes empty blocks to be overridden
             }
 
             if (iter == iterationLimit)
@@ -173,26 +155,4 @@ namespace Core.Solvers
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack=1)]
-    public struct CombinationCounter
-    {
-        public int[] BlockCounters;
-
-        public void AddCounter(int blockIndex, int amount)
-        {
-            if (BlockCounters[blockIndex] == 0 && amount < 0)
-            {
-                Debug.LogWarning("This should never happen");
-            }
-            BlockCounters[blockIndex] += amount;
-        }
-
-        public void Reset()
-        {
-            for (var i = 0; i < BlockCounters.Length; i++)
-            {
-                BlockCounters[i] = 0;
-            }
-        }
-    }
 }

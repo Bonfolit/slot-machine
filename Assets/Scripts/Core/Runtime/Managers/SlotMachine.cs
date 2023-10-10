@@ -1,20 +1,15 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BonLib.DependencyInjection;
 using BonLib.Events;
 using BonLib.Managers;
 using BonLib.Pooling;
 using Core.Config;
 using Core.Data;
-using Core.Helpers;
 using Core.Runtime.Events.Gameplay;
 using Core.Runtime.Gameplay.Slot;
-using Core.Runtime.Gameplay.VFX;
 using DG.Tweening;
 using DG.Tweening.Core;
-using NaughtyAttributes;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Random = System.Random;
 
 namespace Core.Runtime.Managers

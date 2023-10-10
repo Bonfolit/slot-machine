@@ -1,6 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using Core.Runtime.Gameplay;
+﻿using System.Diagnostics;
+using Core.Helpers;
 using Core.Runtime.Gameplay.Slot;
 using Core.Solvers;
 using NUnit.Framework;
@@ -30,31 +29,8 @@ namespace Tests
 
             Debug.LogWarning($"Time Elapsed: {watch.ElapsedMilliseconds}");
             watch.Stop();
-            
-            var totalCombinationCount = table.SlotCombinations.Count;
 
-            var combinationCounters = new CombinationCounter[totalCombinationCount];
-            var blockWidths = new float[totalCombinationCount];
-
-            for (var i = 0; i < totalCombinationCount; i++)
-            {
-                var blockWidth = ((float)ROW_COUNT / 100f) / table.SlotCombinations[i].Probability;
-                blockWidths[i] = blockWidth;
-            }
-            
-            for (int i = 0; i < ROW_COUNT; i++)
-            {
-                var combinationIndex = table.GetSlotCombinationIndex(in result[i]);
-                var width = blockWidths[combinationIndex];
-                var blockIndex = (int)((float)i / width);
-
-                if (combinationCounters[combinationIndex].BlockCounters == null)
-                {
-                    combinationCounters[combinationIndex].BlockCounters = new int[Mathf.RoundToInt(table.SlotCombinations[combinationIndex].Probability * ROW_COUNT)];
-                }
-                
-                combinationCounters[combinationIndex].AddCounter(blockIndex, 1);
-            }
+            var combinationCounters = SlotHelper.GetCombinationCounters(in result, table);
             
             var totalBlockCount = 0;
 

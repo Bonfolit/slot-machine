@@ -1,11 +1,7 @@
-﻿using BonLib.DependencyInjection;
-using BonLib.Events;
-using BonLib.Pooling;
+﻿using BonLib.Pooling;
 using Core.Config;
 using Core.Data;
 using Core.Helpers;
-using Core.Runtime.Events.Gameplay;
-using Core.Runtime.Managers;
 using UnityEngine;
 
 namespace Core.Runtime.Gameplay.Slot
