@@ -52,7 +52,7 @@ namespace Core.Helpers
 
                 if (counters[combinationIndex].BlockCounters == null)
                 {
-                    counters[combinationIndex].BlockCounters = new int[Mathf.RoundToInt(table.SlotCombinations[combinationIndex].Probability * rowCount)];
+                    counters[combinationIndex].BlockCounters = new int[Mathf.RoundToInt(table.SlotCombinations[combinationIndex].Probability * 100f)];
                 }
                 
                 counters[combinationIndex].AddCounter(blockIndex, 1);
@@ -85,7 +85,7 @@ namespace Core.Helpers
 
                 if (counters[combinationIndex].BlockCounters == null)
                 {
-                    counters[combinationIndex].BlockCounters = new int[Mathf.RoundToInt(table.SlotCombinations[combinationIndex].Probability * rowCount)];
+                    counters[combinationIndex].BlockCounters = new int[Mathf.RoundToInt(table.SlotCombinations[combinationIndex].Probability * 100f)];
                 }
                 
                 counters[combinationIndex].AddCounter(blockIndex, 1);

@@ -5,13 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5dcda24b-d88c-4414-a789-93401d962f68" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Misc.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Misc/CombinationCounter.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Misc/CombinationCounter.cs.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Core/Data/GameData.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Data/GameData.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Spyke_Games_Case_Project/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Spyke_Games_Case_Project/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Core/Helpers/SlotHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Helpers/SlotHelper.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Core/Runtime/Managers/SlotMachine.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Runtime/Managers/SlotMachine.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Core/Runtime/Managers/SlotManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Runtime/Managers/SlotManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Core/Solvers/SlotSolver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Solvers/SlotSolver.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Tests/SlotTester.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Tests/SlotTester.cs" afterDir="false" />
     </list>
@@ -120,10 +115,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="32432">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" />
+      <option name="pid" value="32432" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
@@ -164,7 +159,7 @@
       <workItem from="1696763637598" duration="26834000" />
       <workItem from="1696845544636" duration="7880000" />
       <workItem from="1696878914347" duration="5599000" />
-      <workItem from="1696934595174" duration="5062000" />
+      <workItem from="1696934595174" duration="7622000" />
     </task>
     <servers />
   </component>

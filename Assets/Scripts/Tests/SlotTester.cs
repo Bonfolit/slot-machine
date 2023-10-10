@@ -40,7 +40,7 @@ namespace Tests
             }
 
             var loss = 0f;
-            SlotSolver.CalculateLoss(ref loss, in totalBlockCount, in combinationCounters);
+            SlotSolver.CalculateLoss(ref loss, ROW_COUNT, in totalBlockCount, in combinationCounters);
 
             Assert.Less(loss, LOSS_LIMIT);
         }

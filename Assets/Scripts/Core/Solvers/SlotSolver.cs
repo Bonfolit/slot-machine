@@ -67,7 +67,7 @@ namespace Core.Solvers
             var fallbackLoss = float.MaxValue;
             var loss = float.MaxValue;
 
-            while (iter < iterationLimit && CalculateLoss(ref loss, in totalBlockCount, in combinationCounters) > lossThreshold)
+            while (iter < iterationLimit && CalculateLoss(ref loss, in count, in totalBlockCount, in combinationCounters) > lossThreshold)
             {
                 iter++;
                 
@@ -138,14 +138,16 @@ namespace Core.Solvers
             return result;
         }
         
-        public static float CalculateLoss(ref float loss, in int totalBlockCount, in CombinationCounter[] combinationCounters)
+        public static float CalculateLoss(ref float loss, in int rowCount, in int totalBlockCount, in CombinationCounter[] combinationCounters)
         {
-            var cumulativeLoss = 0;
+            var expectedFillRate = (float)rowCount / 100f;
+            
+            var cumulativeLoss = 0f;
             for (var i = 0; i < combinationCounters.Length; i++)
             {
                 for (int j = 0; j < combinationCounters[i].BlockCounters.Length; j++)
                 {
-                    cumulativeLoss += Math.Abs(1 - combinationCounters[i].BlockCounters[j]);
+                    cumulativeLoss += Math.Abs(expectedFillRate - (float)combinationCounters[i].BlockCounters[j]);
                 }
             }
 
