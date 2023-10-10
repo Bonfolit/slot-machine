@@ -13,7 +13,6 @@ namespace Core.Runtime.Gameplay.Slot
         public SlotType[] SlotTypes;
 
         private bool? m_isMatch;
-        
         public bool IsMatch => m_isMatch ??= this.IsMatch();
 
         public SlotCombination(SlotType type1, SlotType type2, SlotType type3)

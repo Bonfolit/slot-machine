@@ -37,10 +37,6 @@ namespace Core.Runtime.Managers
         private ColumnAnimationConfig m_columnAnimationConfig;
         public ColumnAnimationConfig ColumnAnimationConfig => m_columnAnimationConfig ??=
             Resources.Load<ColumnAnimationConfig>("Config/ColumnAnimationConfig");
-        
-        private ParticleConfig m_particleConfig;
-        public ParticleConfig ParticleConfig => m_particleConfig ??=
-            Resources.Load<ParticleConfig>("Config/ParticleConfig");
 
         [SerializeField]
         private PoolObject m_spriteRendererPoolObject;
@@ -69,6 +65,8 @@ namespace Core.Runtime.Managers
             base.Initialize();
 
             m_random = new Random();
+
+            m_spinTask = null;
         }
 
         public override void LateInitialize()

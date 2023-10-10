@@ -10,7 +10,17 @@ namespace Core.Solvers
     public static class SlotSolver
     {
         /// <summary>
-        /// A genetic-inspired knapsack solver for slot combination sequencing
+        /// <para>A genetic-inspired knapsack solver for slot combination sequencing.</para>
+        /// <para>Starts out with generating "count" random slot combinations and calculating block counts for each combination
+        /// with respect to its probability, then replaces a random combination on a random block with the lowest count.</para>
+        /// <para>Calculates a loss value with blocks that don't have exactly 1 element, and iterates until either
+        /// it hits the lossThreshold, or the iterationLimit. In every iteration, a fallback combination is cached,
+        /// and in the case of hitting the iteration limit, the fallback combination is used. </para>
+        /// <para><b>Note:</b> <br></br>This solver only optimizes the probability table starting with index 0.
+        /// It does not account the fact that as the game progresses, calculating remaining combination block counts
+        /// will not yield optimized results. For example, for count: 100 and the calculated loss for the combination
+        /// index span [0,99] might be 0.02, but it's probably much higher, let's say for the span [8,107].
+        /// Continuous loss calculations are not taken into account when the solver is created.</para>
         /// </summary>
         public static SlotCombination[] Solve(SlotCombinationTable table, int count, 
             int iterationLimit = 1000, float lossThreshold = .05f)
@@ -21,7 +31,7 @@ namespace Core.Solvers
 
             var result = new SlotCombination[count];
 
-            var bestCombinationIndices = new int[count];
+            var fallbackCombinationIndices = new int[count];
             
             var combinationIndices = new int[count];
             var blockWidths = new float[totalCombinationCount];
@@ -70,7 +80,7 @@ namespace Core.Solvers
 
             var iter = 0;
 
-            var candidateLoss = float.MaxValue;
+            var fallbackLoss = float.MaxValue;
             var loss = float.MaxValue;
 
             while (iter < iterationLimit && CalculateLoss(ref loss, in totalBlockCount, in combinationCounters) > lossThreshold)
@@ -79,14 +89,12 @@ namespace Core.Solvers
                 
                 candidateAddressCount = 0;
 
-                if (loss < candidateLoss)
+                if (loss < fallbackLoss)
                 {
-                    candidateLoss = loss;
+                    fallbackLoss = loss;
                     
-                    Array.Copy(combinationIndices, 0, bestCombinationIndices, 0, count);
+                    Array.Copy(combinationIndices, 0, fallbackCombinationIndices, 0, count);
                 }
-
-                var target = (combinationIndex: -1, blockIndex: -1);
 
                 var searchAmount = int.MaxValue;
 
@@ -107,7 +115,7 @@ namespace Core.Solvers
                     }
                 }
 
-                target = candidateAddresses[random.Next(0, candidateAddressCount)];
+                var target = candidateAddresses[random.Next(0, candidateAddressCount)];
                 
                 var width = blockWidths[target.combinationIndex];
                 var startPercentage = target.blockIndex * width;
@@ -132,8 +140,8 @@ namespace Core.Solvers
 
             if (iter == iterationLimit)
             {
-                Array.Copy(bestCombinationIndices, 0, combinationIndices, 0, count);
-                loss = candidateLoss;
+                Array.Copy(fallbackCombinationIndices, 0, combinationIndices, 0, count);
+                loss = fallbackLoss;
             }
 
 
@@ -141,30 +149,15 @@ namespace Core.Solvers
             {
                 result[i] = table.SlotCombinations[combinationIndices[i]].Combination;
             }
-            
-            for (var i = 0; i < blockWidths.Length; i++)
-            {
-                Debug.Log($"Block Width {i}: {blockWidths[i]}");
-            }
-            
-            for (var i = 0; i < combinationCounters.Length; i++)
-            {
-                for (var j = 0; j < combinationCounters[i].BlockCounters.Length; j++)
-                {
-                    Debug.Log($"Combination: {i}, Block: {j}, Count: {combinationCounters[i].BlockCounters[j]}");
-                }
-            }
 
             Debug.LogWarning($"Iteration reached: {iter}");
-            Debug.LogWarning($"Loss in Solver: {loss}");
+            Debug.LogWarning($"Loss: {loss}");
 
             return result;
         }
         
         public static float CalculateLoss(ref float loss, in int totalBlockCount, in CombinationCounter[] combinationCounters)
         {
-            loss = 0f;
-            
             var cumulativeLoss = 0;
             for (var i = 0; i < combinationCounters.Length; i++)
             {

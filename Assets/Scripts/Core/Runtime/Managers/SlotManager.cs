@@ -41,6 +41,11 @@ namespace Core.Runtime.Managers
             EventManager.AddListener<SetSlotCombinationsEvent>(this);
         }
 
+        public void OnEventReceived(ref SetSlotCombinationsEvent evt)
+        {
+            SetCombinations(evt.GameData, evt.InitialGeneration);
+        }
+
         public void SetCombinations(GameData gameData, bool initialGeneration)
         {
             gameData.Combinations = SlotSolver.Solve(
@@ -65,11 +70,6 @@ namespace Core.Runtime.Managers
         public SlotCombination GetLastCombination()
         {
             return m_saveManager.GetLastCombination();
-        }
-
-        public void OnEventReceived(ref SetSlotCombinationsEvent evt)
-        {
-            SetCombinations(evt.GameData, evt.InitialGeneration);
         }
     }
 

@@ -8,8 +8,8 @@ namespace Core.Data
     public class GameData : ScriptableObject
     {
         public int CombinationIndex;
+        
         public SlotCombination LastCombination;
-
         public SlotCombination[] Combinations;
 
         public bool ReachedFinalCombination()

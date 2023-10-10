@@ -29,6 +29,7 @@ namespace Tests
             var result = SlotSolver.Solve(table, ROW_COUNT, ITERATION_LIMIT, LOSS_THRESHOLD);
 
             Debug.LogWarning($"Time Elapsed: {watch.ElapsedMilliseconds}");
+            watch.Stop();
             
             var totalCombinationCount = table.SlotCombinations.Count;
 
@@ -65,19 +66,6 @@ namespace Tests
             var loss = 0f;
             SlotSolver.CalculateLoss(ref loss, in totalBlockCount, in combinationCounters);
 
-            if (loss >= LOSS_LIMIT)
-            {
-                Debug.LogWarning("Test Failed");
-            }
-
-            
-            // for (int i = 0; i < result.Length; i++)
-            // {
-            //     Debug.Log($"Row: {i}, Combination: {result[i].SlotTypes[0]}, {result[i].SlotTypes[1]}, {result[i].SlotTypes[2]}");
-            // }
-
-            Debug.LogWarning($"Total Block Count: {totalBlockCount}");
-            Debug.LogWarning($"Loss: {loss}");
             Assert.Less(loss, LOSS_LIMIT);
         }
     }
