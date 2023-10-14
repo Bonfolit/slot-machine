@@ -1,5 +1,5 @@
-# Demo Slot Machine game project.<br>
-### Contains an implementation based on [BonLib](https://github.com/Bonfolit/BonLib/)<br> 
+# Demo Slot Machine game project<br>
+### Contains an implementation based on [BonLib](https://github.com/Bonfolit/BonLib/). <br> 
 ### Utilizes knapsack probability solver for outcome predictions. <br>
 ### Combines reactive programming methods with async controls. <br>
 ---
