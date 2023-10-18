@@ -18,13 +18,10 @@ namespace Core.Runtime.Gameplay.Slot
         public void Initialize(SlotSpriteContainer container, SlotConfig config, PoolObject spriteRendererPoolObject, float columnTotalHeight)
         {
             m_columnTotalHeight = columnTotalHeight;
-            
-            m_slots = new Slot[config.ColumnSize];
 
             for (int i = 0; i < config.ColumnSize; i++)
             {
-                m_slots[i] = new Slot(i);
-                m_slots[i].Initialize(transform, (SlotType)i, config, container, spriteRendererPoolObject);
+                m_slots[i].Initialize(transform, (SlotType)i, config, container);
             }
         }
 
@@ -40,6 +37,7 @@ namespace Core.Runtime.Gameplay.Slot
 
         public void BlurSlots(float duration)
         {
+            Debug.LogWarning("BLUR");
             for (var i = 0; i < m_slots.Length; i++)
             {
                 m_slots[i].Blur(duration);
@@ -48,6 +46,8 @@ namespace Core.Runtime.Gameplay.Slot
         
         public void UnblurSlots(float duration)
         {
+            Debug.LogWarning("UNBLUR");
+
             for (var i = 0; i < m_slots.Length; i++)
             {
                 m_slots[i].Unblur(duration);

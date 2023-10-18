@@ -145,24 +145,27 @@ namespace Core.Runtime.Managers
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        column.SlideAmount + SlotConfig.ColumnTotalHeight * columnAnimationData.InitialSlideCount, 
+                        column.SlideAmount - SlotConfig.ColumnTotalHeight * columnAnimationData.InitialSlideCount, 
                         columnAnimationData.InitialDuration)
                     .SetEase(columnAnimationData.InitialEase));
                 
-            column.BlurSlots(columnAnimationData.InitialDuration);
+            // column.BlurSlots(columnAnimationData.InitialDuration);
+
+            sequence.AppendCallback(() => column.BlurSlots(columnAnimationData.StopDuration));
                 
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        column.SlideAmount + SlotConfig.ColumnTotalHeight * spinCount, 
+                        column.SlideAmount - SlotConfig.ColumnTotalHeight * spinCount, 
                         columnAnimationData.LoopDuration)
-                    .SetEase(columnAnimationData.LoopEase)
-                    .OnComplete(() => column.UnblurSlots(columnAnimationData.StopDuration)));
+                    .SetEase(columnAnimationData.LoopEase));
+            
+            sequence.AppendCallback(() => column.UnblurSlots(columnAnimationData.StopDuration));
                 
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
-                        slideAmount + SlotConfig.ColumnTotalHeight * columnAnimationData.StopSlideCount, 
+                        slideAmount - SlotConfig.ColumnTotalHeight * columnAnimationData.StopSlideCount, 
                         columnAnimationData.StopDuration)
                     .SetEase(columnAnimationData.StopEase));
 

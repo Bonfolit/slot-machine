@@ -15,7 +15,7 @@ MonoBehaviour:
   ColumnSize: 5
   SlotDimensions: {x: 0.8, y: 0.8}
   VerticalOffset: 2
-  MarkerIndex: 3
+  MarkerIndex: 2
   InitialCombination:
     SlotTypes: 000000000300000001000000
   CombinationBufferAmount: 100
