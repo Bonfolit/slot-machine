@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Core.Runtime.Gameplay.VFX
+namespace BonLib.VFX
 {
 
     public class ParticleController : MonoBehaviour

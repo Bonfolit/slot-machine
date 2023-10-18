@@ -155,6 +155,43 @@ namespace Core.Solvers
 
             return loss;
         }
+
+        public static float CalculateLoss(SlotCombinationTable table, SlotCombination[] combinations)
+        {
+            var rowCount = combinations.Length;
+
+            var combinationCount = table.SlotCombinations.Count;
+
+            var totalLoss = 0f;
+
+            for (int i = 0; i < combinationCount; i++)
+            {
+                var combination = table.SlotCombinations[i].Combination;
+                var probability = table.SlotCombinations[i].Probability;
+                
+                var bucketSize = (float)rowCount / (100f * probability);
+                var expectedFillRate = (float)rowCount / 100f;
+
+                var observedCount = 0;
+                var upperBound = bucketSize;
+
+                for (int j = 0; j < rowCount; j++)
+                {
+                    if (j > (int)upperBound)
+                    {
+                        totalLoss += Math.Abs(expectedFillRate - (float)observedCount);
+                        observedCount = 0;
+                        upperBound += bucketSize;
+                    }
+                    if (combinations[j].Equals(combination))
+                    {
+                        observedCount++;
+                    }
+                }
+            }
+            
+            return totalLoss / (float)rowCount;
+        }
     }
 
 }

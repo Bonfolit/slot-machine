@@ -1,8 +1,8 @@
 ﻿using BonLib.Events;
 using BonLib.Managers;
+using BonLib.VFX;
 using Core.Config;
 using Core.Runtime.Events.Gameplay;
-using Core.Runtime.Gameplay.VFX;
 using UnityEngine;
 
 namespace Core.Runtime.Managers

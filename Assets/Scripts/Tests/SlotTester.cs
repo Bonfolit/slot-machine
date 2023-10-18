@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Core.Helpers;
 using Core.Runtime.Gameplay.Slot;
 using Core.Solvers;
@@ -19,7 +20,6 @@ namespace Tests
             const int ROW_COUNT = 100;
             const int ITERATION_LIMIT = 50000;
             const float LOSS_THRESHOLD = 0.01f;
-            const float LOSS_LIMIT = 0.1f;
             
             var table = Resources.Load<SlotCombinationTable>("Data/SlotCombinationTable");
 
@@ -42,7 +42,36 @@ namespace Tests
             var loss = 0f;
             SlotSolver.CalculateLoss(ref loss, ROW_COUNT, in totalBlockCount, in combinationCounters);
 
-            Assert.Less(loss, LOSS_LIMIT);
+            Assert.Less(loss, LOSS_THRESHOLD);
+        }
+
+        [Test]
+        public void ValidateLossCalculation()
+        {
+            const int ROW_COUNT = 100;
+            const int ITERATION_LIMIT = 50000;
+            const float LOSS_THRESHOLD = 0.01f;
+            const float LOSS_ERROR_MARGIN = 0.01f;
+            
+            var table = Resources.Load<SlotCombinationTable>("Data/SlotCombinationTable");
+            var result = SlotSolver.Solve(table, ROW_COUNT, ITERATION_LIMIT, LOSS_THRESHOLD);
+
+            var combinationCounters = SlotHelper.GetCombinationCounters(in result, table);
+            
+            var totalBlockCount = 0;
+
+            for (int i = 0; i < combinationCounters.Length; i++)
+            {
+                totalBlockCount += combinationCounters[i].BlockCounters.Length;
+            }
+
+            var loss = 0f;
+            SlotSolver.CalculateLoss(ref loss, ROW_COUNT, in totalBlockCount, in combinationCounters);
+
+            var validatedLoss = SlotSolver.CalculateLoss(table, result);
+            Debug.LogWarning($"Calculated loss: {loss}, Validated loss: {validatedLoss}");
+
+            Assert.Less(Math.Abs(loss - validatedLoss), LOSS_ERROR_MARGIN);
         }
     }
 
