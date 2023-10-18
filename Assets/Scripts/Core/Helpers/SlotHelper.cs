@@ -2,6 +2,7 @@
 using Core.Misc;
 using Core.Runtime.Gameplay.Slot;
 using UnityEngine;
+using Random = System.Random;
 
 namespace Core.Helpers
 {
@@ -26,6 +27,16 @@ namespace Core.Helpers
             }
 
             return isMatch;
+        }
+
+        public static void FillRandom(Random random, ref int[] arr, int minInclusive, int maxExclusive)
+        {
+            for (int i = 0; i < arr.Length; i++)
+            {
+                var combinationIndex = random.Next(minInclusive, maxExclusive);
+                
+                arr[i] = combinationIndex;
+            }
         }
 
         public static CombinationCounter[] GetCombinationCounters(in SlotCombination[] combinations,

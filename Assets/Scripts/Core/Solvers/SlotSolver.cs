@@ -10,6 +10,7 @@ namespace Core.Solvers
 {
     public static class SlotSolver
     {
+        
         /// <summary>
         /// <para><b>A genetic-inspired knapsack solver for slot combination sequencing.</b></para>
         /// <para>Starts out with generating "count" random slot combinations and calculating block counts for each
@@ -32,10 +33,9 @@ namespace Core.Solvers
             var totalCombinationCount = table.SlotCombinations.Count;
 
             var result = new SlotCombination[count];
-
+            var combinationIndices = new int[count];
             var fallbackCombinationIndices = new int[count];
             
-            var combinationIndices = new int[count];
             var blockWidths = new float[totalCombinationCount];
 
             for (var i = 0; i < totalCombinationCount; i++)
@@ -44,12 +44,7 @@ namespace Core.Solvers
                 blockWidths[i] = blockWidth;
             }
             
-            for (int i = 0; i < count; i++)
-            {
-                var combinationIndex = random.Next(0, totalCombinationCount);
-                
-                combinationIndices[i] = combinationIndex;
-            }
+            SlotHelper.FillRandom(random, ref combinationIndices, 0, totalCombinationCount);
 
             var combinationCounters = SlotHelper.GetCombinationCounters(in combinationIndices, table);
 
@@ -59,56 +54,25 @@ namespace Core.Solvers
                 totalBlockCount += combinationCounters[i].BlockCounters.Length;
             }
 
-            var candidateAddresses = new (int combinationIndex, int blockIndex)[totalBlockCount];
-            var candidateAddressCount = 0;
-
             var iter = 0;
 
             var fallbackLoss = float.MaxValue;
             var loss = float.MaxValue;
 
-            while (iter < iterationLimit && CalculateLoss(ref loss, in count, in totalBlockCount, in combinationCounters) > lossThreshold)
+            while (iter < iterationLimit && loss > lossThreshold)
             {
                 iter++;
                 
-                candidateAddressCount = 0;
-
                 if (loss < fallbackLoss)
                 {
                     fallbackLoss = loss;
                     
                     Array.Copy(combinationIndices, 0, fallbackCombinationIndices, 0, count);
                 }
-
-                var searchAmount = int.MaxValue;
-
-                for (int i = 0; i < totalCombinationCount; i++)
-                {
-                    var minCount = combinationCounters[i].BlockCounters.Min();
-                    searchAmount = searchAmount > minCount ? minCount : searchAmount;
-                }
-
-                for (int i = 0; i < totalCombinationCount; i++)
-                {
-                    for (int j = 0; j < combinationCounters[i].BlockCounters.Length; j++)
-                    {
-                        if (combinationCounters[i].BlockCounters[j] == searchAmount)
-                        {
-                            candidateAddresses[candidateAddressCount++] = (i, j);
-                        }
-                    }
-                }
-
-                var target = candidateAddresses[random.Next(0, candidateAddressCount)];
                 
+                var target = GetReplacementAddress(random, totalCombinationCount, in combinationCounters);
                 var width = blockWidths[target.combinationIndex];
-                var startPercentage = target.blockIndex * width;
-                var endPercentage = startPercentage + width;
-                var startPos = Mathf.FloorToInt(startPercentage) + (target.blockIndex != 0 ? 1 : 0);
-                var endPos = Mathf.CeilToInt(endPercentage);
-                var targetIndex = random.Next(startPos, endPos);
-
-                targetIndex = Mathf.Clamp(targetIndex, 0, count - 1);
+                var targetIndex = GetTargetIndex(random, target.blockIndex, width, count);
 
                 var prevCombination = combinationIndices[targetIndex];
                 var prevBlockWidth = blockWidths[prevCombination];
@@ -118,10 +82,14 @@ namespace Core.Solvers
                 
                 combinationCounters[prevCombination].AddCounter(prevBlock, -1);
                 combinationCounters[target.combinationIndex].AddCounter(target.blockIndex, 1);
+                
+                loss = CalculateLoss(count, in combinationCounters);
             }
 
             if (iter == iterationLimit)
             {
+                Debug.LogWarning($"Iteration limit reached!");
+
                 Array.Copy(fallbackCombinationIndices, 0, combinationIndices, 0, count);
                 loss = fallbackLoss;
             }
@@ -132,13 +100,60 @@ namespace Core.Solvers
                 result[i] = table.SlotCombinations[combinationIndices[i]].Combination;
             }
 
-            Debug.LogWarning($"Iteration reached: {iter}");
-            Debug.LogWarning($"Loss: {loss}");
-
             return result;
         }
+
+        private static int GetTargetIndex(Random random, int blockIndex, float width, int rowCount)
+        {
+            var startPercentage = blockIndex * width;
+            var endPercentage = startPercentage + width;
+            var startPos = Mathf.FloorToInt(startPercentage) + (blockIndex != 0 ? 1 : 0);
+            var endPos = Mathf.CeilToInt(endPercentage);
+            var targetIndex = random.Next(startPos, endPos);
+
+            targetIndex = Mathf.Clamp(targetIndex, 0, rowCount - 1);
+
+            return targetIndex;
+        }
         
-        public static float CalculateLoss(ref float loss, in int rowCount, in int totalBlockCount, in CombinationCounter[] combinationCounters)
+        private static (int combinationIndex, int blockIndex) GetReplacementAddress(
+            Random random, int totalCombinationCount, in CombinationCounter[] combinationCounters)
+        {
+            var totalBlockCount = 0;
+            for (int i = 0; i < combinationCounters.Length; i++)
+            {
+                totalBlockCount += combinationCounters[i].BlockCounters.Length;
+            }
+            
+            var candidateAddressCounter = 0;
+            
+            var candidateAddresses = new (int combinationIndex, int blockIndex)[totalBlockCount];
+            
+            var searchAmount = int.MaxValue;
+
+            for (int i = 0; i < totalCombinationCount; i++)
+            {
+                var minCount = combinationCounters[i].BlockCounters.Min();
+                searchAmount = searchAmount > minCount ? minCount : searchAmount;
+            }
+
+            for (int i = 0; i < totalCombinationCount; i++)
+            {
+                for (int j = 0; j < combinationCounters[i].BlockCounters.Length; j++)
+                {
+                    if (combinationCounters[i].BlockCounters[j] == searchAmount)
+                    {
+                        candidateAddresses[candidateAddressCounter++] = (i, j);
+                    }
+                }
+            }
+
+            var target = candidateAddresses[random.Next(0, candidateAddressCounter)];
+
+            return target;
+        }
+        
+        public static float CalculateLoss(int rowCount, in CombinationCounter[] combinationCounters)
         {
             var expectedFillRate = (float)rowCount / 100f;
             
@@ -151,12 +166,12 @@ namespace Core.Solvers
                 }
             }
 
-            loss = (float)cumulativeLoss / (float)totalBlockCount;
+            var loss = (float)cumulativeLoss / 100f;
 
             return loss;
         }
 
-        public static float CalculateLoss(SlotCombinationTable table, SlotCombination[] combinations)
+        public static float CalculateLoss(SlotCombinationTable table, in SlotCombination[] combinations)
         {
             var rowCount = combinations.Length;
 
