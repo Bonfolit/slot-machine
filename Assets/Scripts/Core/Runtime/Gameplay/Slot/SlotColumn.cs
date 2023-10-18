@@ -1,6 +1,4 @@
-﻿using BonLib.Pooling;
-using Core.Config;
-using Core.Data;
+﻿using Core.Config;
 using UnityEngine;
 
 namespace Core.Runtime.Gameplay.Slot
@@ -15,13 +13,14 @@ namespace Core.Runtime.Gameplay.Slot
 
         [SerializeField]
         private Slot[] m_slots;
-        public void Initialize(SlotSpriteContainer container, SlotConfig config, PoolObject spriteRendererPoolObject, float columnTotalHeight)
+        
+        public void Initialize(SlotConfig config)
         {
-            m_columnTotalHeight = columnTotalHeight;
+            m_columnTotalHeight = config.ColumnTotalHeight;
 
             for (int i = 0; i < config.ColumnSize; i++)
             {
-                m_slots[i].Initialize(transform, (SlotType)i, config, container);
+                m_slots[i].Initialize(config);
             }
         }
 
@@ -35,22 +34,11 @@ namespace Core.Runtime.Gameplay.Slot
             }
         }
 
-        public void BlurSlots(float duration)
+        public void SetBlur(bool setBlur)
         {
-            Debug.LogWarning("BLUR");
             for (var i = 0; i < m_slots.Length; i++)
             {
-                m_slots[i].Blur(duration);
-            }
-        }
-        
-        public void UnblurSlots(float duration)
-        {
-            Debug.LogWarning("UNBLUR");
-
-            for (var i = 0; i < m_slots.Length; i++)
-            {
-                m_slots[i].Unblur(duration);
+                m_slots[i].SetBlur(setBlur);
             }
         }
     }

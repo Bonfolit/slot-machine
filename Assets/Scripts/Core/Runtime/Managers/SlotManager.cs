@@ -23,6 +23,9 @@ namespace Core.Runtime.Managers
         public SlotConfig Config => m_config ??=
             Resources.Load<SlotConfig>("Config/SlotConfig");
 
+        [SerializeField]
+        private SlotMachine m_slotMachine;
+
         public override void ResolveDependencies()
         {
             base.ResolveDependencies();
@@ -35,6 +38,13 @@ namespace Core.Runtime.Managers
             base.SubscribeToEvents();
             
             EventManager.AddListener<SetSlotCombinationsEvent>(this);
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            
+            m_slotMachine.Init();
         }
 
         public void OnEventReceived(ref SetSlotCombinationsEvent evt)

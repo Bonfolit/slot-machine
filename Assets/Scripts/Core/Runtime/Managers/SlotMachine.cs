@@ -1,8 +1,6 @@
 ﻿using System.Threading.Tasks;
 using BonLib.DependencyInjection;
 using BonLib.Events;
-using BonLib.Managers;
-using BonLib.Pooling;
 using Core.Config;
 using Core.Data;
 using Core.Runtime.Events.Gameplay;
@@ -15,15 +13,12 @@ using Random = System.Random;
 namespace Core.Runtime.Managers
 {
 
-    public class SlotMachine : Manager<SlotMachine>,
+    public class SlotMachine : MonoBehaviour,
         IEventHandler<SpinButtonPressedEvent>
     {
-        private Random m_random;
+        private EventManager m_eventManager;
         private SlotManager m_slotManager;
-        
-        private SlotSpriteContainer m_slotSpriteContainer;
-        public SlotSpriteContainer SlotSpriteContainer => m_slotSpriteContainer ??=
-            Resources.Load<SlotSpriteContainer>("Data/SlotSpriteContainer");
+        private Random m_random;
         
         private SlotConfig m_slotConfig;
         public SlotConfig SlotConfig => m_slotConfig ??=
@@ -32,45 +27,25 @@ namespace Core.Runtime.Managers
         private ColumnAnimationConfig m_columnAnimationConfig;
         public ColumnAnimationConfig ColumnAnimationConfig => m_columnAnimationConfig ??=
             Resources.Load<ColumnAnimationConfig>("Config/ColumnAnimationConfig");
-
-        [SerializeField]
-        private PoolObject m_spriteRendererPoolObject;
         
         [SerializeField]
         private SlotColumn[] m_slotColumns;
 
         private Task m_spinTask;
 
-        public override void ResolveDependencies()
+        public void Init()
         {
-            base.ResolveDependencies();
-
+            m_eventManager = DI.Resolve<EventManager>();
             m_slotManager = DI.Resolve<SlotManager>();
-        }
-
-        public override void SubscribeToEvents()
-        {
-            base.SubscribeToEvents();
-            
-            EventManager.AddListener<SpinButtonPressedEvent>(this);
-        }
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
             m_random = new Random();
 
             m_spinTask = null;
-        }
-
-        public override void LateInitialize()
-        {
-            base.LateInitialize();
+            
+            m_eventManager.AddListener<SpinButtonPressedEvent>(this);
             
             for (var i = 0; i < m_slotColumns.Length; i++)
             {
-                m_slotColumns[i].Initialize(SlotSpriteContainer, SlotConfig, m_spriteRendererPoolObject, SlotConfig.ColumnTotalHeight);
+                m_slotColumns[i].Initialize(SlotConfig);
             }
             
             SetCombination(m_slotManager.GetLastCombination(), true);
@@ -91,7 +66,7 @@ namespace Core.Runtime.Managers
             await SetCombination(nextCombination);
 
             var evt = new SpinEndedEvent(nextCombination);
-            EventManager.SendEvent(ref evt);
+            m_eventManager.SendEvent(ref evt);
         }
         
         private async Task SetCombination(SlotCombination combination, bool instant = false)
@@ -149,9 +124,7 @@ namespace Core.Runtime.Managers
                         columnAnimationData.InitialDuration)
                     .SetEase(columnAnimationData.InitialEase));
                 
-            // column.BlurSlots(columnAnimationData.InitialDuration);
-
-            sequence.AppendCallback(() => column.BlurSlots(columnAnimationData.StopDuration));
+            sequence.AppendCallback(() => column.SetBlur(true));
                 
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
@@ -160,8 +133,8 @@ namespace Core.Runtime.Managers
                         columnAnimationData.LoopDuration)
                     .SetEase(columnAnimationData.LoopEase));
             
-            sequence.AppendCallback(() => column.UnblurSlots(columnAnimationData.StopDuration));
-                
+            sequence.AppendCallback(() => column.SetBlur(false));
+
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
