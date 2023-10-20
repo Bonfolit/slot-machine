@@ -33,6 +33,10 @@ namespace Core.Runtime.Managers
 
         private Task m_spinTask;
 
+        private Task<Sequence>[] m_columnSequenceTasks;
+        private Task<Sequence>[] m_columnEndSequenceTasks;
+        private float[] m_slideAmounts;
+
         public void Init()
         {
             m_eventManager = DI.Resolve<EventManager>();
@@ -71,11 +75,19 @@ namespace Core.Runtime.Managers
         
         private async Task SetCombination(SlotCombination combination, bool instant = false)
         {
+            Debug.LogWarning($"Set Combination: {combination.SlotTypes[0]} - {combination.SlotTypes[1]} {combination.SlotTypes[2]}");
             var firstTwoSlotsEqual = combination.SlotTypes[0].Equals(combination.SlotTypes[1]);
 
-            var spinTasks = new Task[m_slotColumns.Length];
+            var columnCount = m_slotColumns.Length;
 
-            for (var i = 0; i < m_slotColumns.Length; i++)
+            // var spinTasks = new Task<Sequence>[m_slotColumns.Length];
+            m_columnSequenceTasks = new Task<Sequence>[columnCount];
+            m_columnEndSequenceTasks = new Task<Sequence>[columnCount];
+            m_slideAmounts = new float[columnCount];
+
+            var animDatas = new ColumnAnimationData[columnCount];
+
+            for (var i = 0; i < columnCount; i++)
             {
                 var column = m_slotColumns[i];
 
@@ -87,10 +99,12 @@ namespace Core.Runtime.Managers
                 }
 
                 var animationData = ColumnAnimationConfig.GetAnimationData(animationType);
+                animDatas[i] = animationData;
                 
                 var slot = combination.SlotTypes[i];
                 var slideCount = (SlotConfig.MarkerIndex - (int)slot) % SlotConfig.ColumnSize;
                 var slideAmount = SlotConfig.VerticalOffset * slideCount;
+                m_slideAmounts[i] = slideAmount;
 
                 var spinCount = m_random.Next(animationData.LoopSpinRange.x, animationData.LoopSpinRange.y);
 
@@ -105,13 +119,21 @@ namespace Core.Runtime.Managers
                     await Task.Delay(ColumnAnimationConfig.StartOffsetPerColumnInMs * i);
                 }
 
-                spinTasks[i] = SpinColumn(column, animationData, spinCount, slideAmount);
+                m_columnSequenceTasks[i] = SpinColumn(column, animationData, spinCount, slideAmount);
             }
 
-            await Task.WhenAll(spinTasks);
+            // await Task.WhenAll(spinTasks);
+
+            await Task.Delay(8000);
+
+            for (int i = 0; i < columnCount; i++)
+            {
+                m_columnSequenceTasks[i].Result.Kill();
+                m_columnEndSequenceTasks[i] = EndSpin(m_slotColumns[i], animDatas[i], m_slideAmounts[i]);
+            }
         }
 
-        private async Task SpinColumn(SlotColumn column, ColumnAnimationData columnAnimationData, int spinCount, float slideAmount)
+        private async Task<Sequence> SpinColumn(SlotColumn column, ColumnAnimationData columnAnimationData, int spinCount, float slideAmount)
         {
             DOSetter<float> slideSetter = column.SetSlide;
             
@@ -131,10 +153,33 @@ namespace Core.Runtime.Managers
                         slideSetter, 
                         column.SlideAmount - SlotConfig.ColumnTotalHeight * spinCount, 
                         columnAnimationData.LoopDuration)
-                    .SetEase(columnAnimationData.LoopEase));
+                    .SetEase(columnAnimationData.LoopEase)
+                    .SetLoops(-1));
+            
+            // sequence.AppendCallback(() => column.SetBlur(false));
+            //
+            // sequence.Append(
+            //     DOTween.To(() => (column.SlideAmount), 
+            //             slideSetter, 
+            //             slideAmount - SlotConfig.ColumnTotalHeight * columnAnimationData.StopSlideCount, 
+            //             columnAnimationData.StopDuration)
+            //         .SetEase(columnAnimationData.StopEase));
+
+            // var duration = (int)((columnAnimationData.InitialDuration + columnAnimationData.LoopDuration + columnAnimationData.StopDuration) * 1000f);
+
+            // await Task.Delay(duration);
+
+            return sequence;
+        }
+
+        private async Task<Sequence> EndSpin(SlotColumn column, ColumnAnimationData columnAnimationData, float slideAmount)
+        {
+            DOSetter<float> slideSetter = column.SetSlide;
+            
+            var sequence = DOTween.Sequence();
             
             sequence.AppendCallback(() => column.SetBlur(false));
-
+            
             sequence.Append(
                 DOTween.To(() => (column.SlideAmount), 
                         slideSetter, 
@@ -142,9 +187,7 @@ namespace Core.Runtime.Managers
                         columnAnimationData.StopDuration)
                     .SetEase(columnAnimationData.StopEase));
 
-            var duration = (int)((columnAnimationData.InitialDuration + columnAnimationData.LoopDuration + columnAnimationData.StopDuration) * 1000f);
-
-            await Task.Delay(duration);
+            return sequence;
         }
 
     }

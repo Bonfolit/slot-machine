@@ -19,7 +19,7 @@ namespace Tests
             
             const int ROW_COUNT = 100;
             const int ITERATION_LIMIT = 10000;
-            const float LOSS_THRESHOLD = 0.01f;
+            const float LOSS_THRESHOLD = 0.000001f;
             
             var table = Resources.Load<SlotCombinationTable>("Data/SlotCombinationTable");
 

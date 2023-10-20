@@ -94,6 +94,9 @@ namespace Core.Solvers
                 loss = fallbackLoss;
             }
 
+            Debug.LogWarning($"Loss: {loss}");
+            Debug.LogWarning($"Iteration: {iter}");
+
 
             for (var i = 0; i < count; i++)
             {
